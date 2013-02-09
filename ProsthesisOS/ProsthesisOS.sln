@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProsthesisOS", "ProsthesisOS\ProsthesisOS.csproj", "{51467B66-6985-4CD4-A996-C13C56E30EC0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Debug|x86.ActiveCfg = Debug|x86
+		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Debug|x86.Build.0 = Debug|x86
+		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Release|x86.ActiveCfg = Release|x86
+		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

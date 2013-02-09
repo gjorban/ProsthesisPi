@@ -3,16 +3,38 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProsthesisOS", "ProsthesisOS\ProsthesisOS.csproj", "{51467B66-6985-4CD4-A996-C13C56E30EC0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProsthesisCore", "ProsthesisCore\ProsthesisCore.csproj", "{25C3E224-9C88-495E-AB0A-4CF5D411F70F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Debug|x86.ActiveCfg = Debug|x86
 		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Debug|x86.Build.0 = Debug|x86
+		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Release|Any CPU.ActiveCfg = Release|x86
+		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Release|Mixed Platforms.Build.0 = Release|x86
 		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Release|x86.ActiveCfg = Release|x86
 		{51467B66-6985-4CD4-A996-C13C56E30EC0}.Release|x86.Build.0 = Release|x86
+		{25C3E224-9C88-495E-AB0A-4CF5D411F70F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25C3E224-9C88-495E-AB0A-4CF5D411F70F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25C3E224-9C88-495E-AB0A-4CF5D411F70F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{25C3E224-9C88-495E-AB0A-4CF5D411F70F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{25C3E224-9C88-495E-AB0A-4CF5D411F70F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{25C3E224-9C88-495E-AB0A-4CF5D411F70F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25C3E224-9C88-495E-AB0A-4CF5D411F70F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25C3E224-9C88-495E-AB0A-4CF5D411F70F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{25C3E224-9C88-495E-AB0A-4CF5D411F70F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{25C3E224-9C88-495E-AB0A-4CF5D411F70F}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

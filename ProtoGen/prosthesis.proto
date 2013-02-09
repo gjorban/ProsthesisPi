@@ -1,0 +1,12 @@
+message HandshakeRequest {
+	required string versionId = 1;
+}
+
+message HandshakeResponse {
+	required int32 commandPort = 1;
+	required string versionId = 2;
+	required bool validConnection = 3;
+}
+message ProsthesisHeartbeat {
+	required int32 ts = 1;
+}

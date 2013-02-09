@@ -5,10 +5,12 @@ using System.Text;
 
 namespace ProsthesisOS
 {
-    class Program
+    public static class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
+            Console.WriteLine(ProsthesisCore.ProsthesisConstants.OSVersion);
+            System.Threading.Thread.Sleep(1000);
         }
     }
 }

@@ -5,14 +5,13 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{51467B66-6985-4CD4-A996-C13C56E30EC0}</ProjectGuid>
+    <ProjectGuid>{370903A5-8128-4E01-BB25-EDBE9734C453}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ProsthesisOS</RootNamespace>
-    <AssemblyName>ProsthesisOS</AssemblyName>
+    <RootNamespace>ProsthesisClientTest</RootNamespace>
+    <AssemblyName>ProsthesisClientTest</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -34,9 +33,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="protobuf-net, Version=2.0.0.622, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -51,14 +47,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TCP\EchoServiceProvider.cs" />
+    <Compile Include="ClientTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="OSMain.cs" />
-    <Compile Include="TCP\HandshakeService.cs" />
-    <Compile Include="TCP\TcpLib.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProsthesisCore\ProsthesisCore.csproj">

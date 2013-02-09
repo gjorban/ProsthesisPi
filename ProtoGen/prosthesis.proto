@@ -1,3 +1,7 @@
+message TypedMessage {
+	required string messageTypeID = 1;
+}
+
 message HandshakeRequest {
 	required string versionId = 1;
 }

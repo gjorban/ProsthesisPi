@@ -36,10 +36,5 @@ namespace ProsthesisOS
                 System.Threading.Thread.Sleep(1000);
             }
         }
-
-        static void CurrentDomain_DomainUnload(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

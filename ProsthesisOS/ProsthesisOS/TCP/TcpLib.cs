@@ -322,6 +322,7 @@ namespace TcpLib
         {
             lock (this)
             {
+                st._provider.OnDropConnection(st);
                 st._conn.Shutdown(SocketShutdown.Both);
                 st._conn.Close();
                 if (_connections.Contains(st))

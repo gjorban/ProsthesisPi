@@ -46,6 +46,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProsthesisConstants.cs" />
     <Compile Include="ProsthesisMessages.cs" />
+    <Compile Include="ProsthesisPacketParser.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="protobuf-net.dll">

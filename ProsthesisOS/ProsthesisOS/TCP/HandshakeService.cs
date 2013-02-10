@@ -26,24 +26,72 @@ namespace ProsthesisOS.TCP
             Console.WriteLine(string.Format("Dropped connection from {0}", state.RemoteEndPoint));
         }
 
-        private List<byte> mBuffer = new List<byte>();
+        private System.IO.MemoryStream mReceiveBuffer = new System.IO.MemoryStream(1024);
+        private ProsthesisCore.ProsthesisPacketParser mParser = new ProsthesisPacketParser();
 
         public override void OnReceiveData(ConnectionState state)
         {
             byte[] buffer = new byte[1024];
             while (state.AvailableData > 0)
             {
-                int readCount = state.Read(buffer, 0, 1024);
+                int readCount = state.Read(buffer, 0, (int)(mReceiveBuffer.Capacity - mReceiveBuffer.Position));
                 if (readCount > 0)
                 {
+                    mParser.AddData(buffer, readCount);
                     try
                     {
-                        ProsthesisCore.Messages.ProsthesisMessage msg = ProtoBuf.Serializer.DeserializeWithLengthPrefix<ProsthesisCore.Messages.ProsthesisMessage>(new System.IO.MemoryStream(buffer), ProtoBuf.PrefixStyle.Fixed32);
-
-                        if (msg != null && (msg is ProsthesisCore.Messages.ProsthesisHandshakeRequest))
+                        while (mParser.MoveNext())
                         {
-                            Console.WriteLine(string.Format("Received handshake w/ Version ID {0}", (msg as ProsthesisCore.Messages.ProsthesisHandshakeRequest).VersionId));
+                            ProsthesisCore.Messages.ProsthesisMessage msg = mParser.Current;
+                            if (msg is ProsthesisCore.Messages.ProsthesisHandshakeRequest)
+                            {
+                                ProsthesisCore.Messages.ProsthesisHandshakeRequest hsR = msg as ProsthesisCore.Messages.ProsthesisHandshakeRequest;
+
+                                Console.WriteLine(string.Format("Received handshake w/ Version ID {0}", hsR.VersionId));
+                            }
                         }
+                     /*   ProsthesisCore.Messages.ProsthesisMessage msg = ProtoBuf.Serializer.DeserializeWithLengthPrefix<ProsthesisCore.Messages.ProsthesisMessage>(mReceiveBuffer, ProtoBuf.PrefixStyle.Fixed32);
+
+                        if (msg != null)
+                        {
+                            if (msg is ProsthesisCore.Messages.ProsthesisHandshakeRequest)
+                            {
+                                ProsthesisCore.Messages.ProsthesisHandshakeRequest hsR = msg as ProsthesisCore.Messages.ProsthesisHandshakeRequest;
+
+                                Console.WriteLine(string.Format("Received handshake w/ Version ID {0}", hsR.VersionId));
+
+                                ProsthesisCore.Messages.ProsthesisHandshakeResponse hsResp = new ProsthesisCore.Messages.ProsthesisHandshakeResponse();
+
+                                if (hsR.VersionId == ProsthesisCore.ProsthesisConstants.OSVersion)
+                                {
+                                    hsResp.AuthorizedConnection = true;
+                                    hsResp.ErrorString = string.Empty;
+                                    System.IO.MemoryStream outBuff = new System.IO.MemoryStream();
+                                    ProtoBuf.Serializer.SerializeWithLengthPrefix<ProsthesisCore.Messages.ProsthesisHandshakeResponse>(outBuff, hsResp, ProtoBuf.PrefixStyle.Fixed32);
+
+                                    state.Write(outBuff.ToArray(), 0, (int)outBuff.Length);
+                                    Console.WriteLine(string.Format("Client version equals ours({0}). Accepting connection", ProsthesisCore.ProsthesisConstants.OSVersion));
+                                }
+                                else
+                                {
+                                    Console.WriteLine(string.Format("Client version ID doesn't match ours(ours: {0}. Theirs: {1}). Rejecting Connection", ProsthesisCore.ProsthesisConstants.OSVersion, hsR.VersionId));
+                                    hsResp.AuthorizedConnection = false;
+                                    hsResp.ErrorString = string.Format("Version mismatch. Server is {0} but client sent {1}", ProsthesisCore.ProsthesisConstants.OSVersion, hsR.VersionId);
+
+                                    System.IO.MemoryStream outBuff = new System.IO.MemoryStream();
+                                    ProtoBuf.Serializer.SerializeWithLengthPrefix<ProsthesisCore.Messages.ProsthesisHandshakeResponse>(outBuff, hsResp, ProtoBuf.PrefixStyle.Fixed32);
+
+                                    state.Write(outBuff.ToArray(), 0, (int)outBuff.Length);
+
+                                    state.EndConnection();
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine(string.Format("Got a message of type {0} but I don't understand it. Ignoring", msg.GetType()));
+                            }
+                        }*/
                     }
                     catch (Exception e)
                     {

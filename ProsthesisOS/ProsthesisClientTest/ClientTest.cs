@@ -12,6 +12,9 @@ namespace ProsthesisClientTest
         static void Main(string[] args)
         {
             TcpClient client = new TcpClient();
+
+            ProsthesisCore.ProsthesisPacketParser packetParser = new ProsthesisCore.ProsthesisPacketParser();
+
             try
             {
                 client.Connect("127.0.0.1", ProsthesisCore.ProsthesisConstants.ConnectionPort);
@@ -43,8 +46,6 @@ namespace ProsthesisClientTest
                         ProsthesisCore.Messages.ProsthesisDataPacket packet = new ProsthesisCore.Messages.ProsthesisDataPacket(dataStream.ToArray(), usedBytes);
                         byte[] packetData = packet.Bytes;
                         stream.Write(packetData, 0, packetData.Length);
-
-                       // System.Threading.Thread.Sleep(10);
                     }
 
                     ConsoleKey key;
@@ -58,17 +59,20 @@ namespace ProsthesisClientTest
                             int readCount = stream.Read(buff, 0, 1024);
                             if (readCount > 0)
                             {
-                                System.IO.MemoryStream memStream = new System.IO.MemoryStream(buff);
+                                packetParser.AddData(buff, readCount);
 
                                 try
                                 {
-                                    ProsthesisCore.Messages.ProsthesisMessage msg = ProtoBuf.Serializer.DeserializeWithLengthPrefix<ProsthesisCore.Messages.ProsthesisMessage>(memStream, ProtoBuf.PrefixStyle.Fixed32);
-                                    if (msg != null)
+                                    while (packetParser.MoveNext())
                                     {
-                                        if (msg is ProsthesisCore.Messages.ProsthesisHandshakeResponse)
+                                        ProsthesisCore.Messages.ProsthesisMessage msg = packetParser.Current;
+                                        if (msg != null)
                                         {
-                                            ProsthesisCore.Messages.ProsthesisHandshakeResponse hsResp = msg as ProsthesisCore.Messages.ProsthesisHandshakeResponse;
-                                            Console.WriteLine(string.Format("Got response. Auth is {0}", hsResp.AuthorizedConnection));
+                                            if (msg is ProsthesisCore.Messages.ProsthesisHandshakeResponse)
+                                            {
+                                                ProsthesisCore.Messages.ProsthesisHandshakeResponse hsResp = msg as ProsthesisCore.Messages.ProsthesisHandshakeResponse;
+                                                Console.WriteLine(string.Format("Got response. Auth is {0}", hsResp.AuthorizedConnection));
+                                            }
                                         }
                                     }
                                 }

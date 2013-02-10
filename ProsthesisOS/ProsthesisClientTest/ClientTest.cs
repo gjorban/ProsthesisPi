@@ -44,7 +44,7 @@ namespace ProsthesisClientTest
                         byte[] packetData = packet.Bytes;
                         stream.Write(packetData, 0, packetData.Length);
 
-                        System.Threading.Thread.Sleep(10);
+                       // System.Threading.Thread.Sleep(10);
                     }
 
                     ConsoleKey key;

@@ -12,6 +12,7 @@ namespace ProsthesisOS
         
         public static void Main(string[] args)
         {
+            ProtoBuf.Serializer.PrepareSerializer<ProsthesisCore.Messages.ProsthesisMessage>();
             ProsthesisOS.TCP.HandshakeService echoSP = new ProsthesisOS.TCP.HandshakeService();
             TcpServer server = new TcpServer(echoSP, ProsthesisCore.ProsthesisConstants.ConnectionPort);
 

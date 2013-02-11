@@ -31,7 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="protobuf-net">
+    <Reference Include="protobuf-net, Version=2.0.0.622, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>lib\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -47,11 +48,6 @@
     <Compile Include="ProsthesisConstants.cs" />
     <Compile Include="ProsthesisMessages.cs" />
     <Compile Include="ProsthesisPacketParser.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="protobuf-net.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -38,7 +38,7 @@ namespace ProsthesisClientTest
                     {
                         byte[] data = new byte[1024];
                         System.IO.MemoryStream dataStream = new System.IO.MemoryStream(data);
-                        ProtoBuf.Serializer.SerializeWithLengthPrefix<ProsthesisCore.Messages.ProsthesisHandshakeRequest>(dataStream, req, ProtoBuf.PrefixStyle.Fixed32);
+                        ProtoBuf.Serializer.Serialize<ProsthesisCore.Messages.ProsthesisHandshakeRequest>(dataStream, req);
                         int usedBytes = (int)dataStream.Position;
 
                         dataStream.Position = 0;

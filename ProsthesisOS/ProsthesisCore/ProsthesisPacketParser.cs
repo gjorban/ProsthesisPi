@@ -53,7 +53,7 @@ namespace ProsthesisCore
                                 hasFullPacket = true;
                                 //Decode the packet!
                                 System.IO.MemoryStream memStream = new System.IO.MemoryStream(memBufferArray, headerSize, (int)packetSize);
-                                Messages.ProsthesisMessage baseMessage = ProtoBuf.Serializer.DeserializeWithLengthPrefix<Messages.ProsthesisMessage>(memStream, ProtoBuf.PrefixStyle.Fixed32);
+                                Messages.ProsthesisMessage baseMessage = ProtoBuf.Serializer.Deserialize<Messages.ProsthesisMessage>(memStream);
                                 mCurrentMessage = baseMessage;
                                 mCurrentDataPacket = new Messages.ProsthesisDataPacket(memStream.ToArray(), (int)memStream.Length);
 

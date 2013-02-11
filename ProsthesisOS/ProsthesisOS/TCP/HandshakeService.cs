@@ -56,7 +56,7 @@ namespace ProsthesisOS.TCP
                                     hsResp.AuthorizedConnection = true;
                                     hsResp.ErrorString = string.Empty;
                                     System.IO.MemoryStream outBuff = new System.IO.MemoryStream();
-                                    ProtoBuf.Serializer.SerializeWithLengthPrefix<ProsthesisCore.Messages.ProsthesisHandshakeResponse>(outBuff, hsResp, ProtoBuf.PrefixStyle.Fixed32);
+                                    ProtoBuf.Serializer.Serialize<ProsthesisCore.Messages.ProsthesisHandshakeResponse>(outBuff, hsResp);
                                     int dataSize = (int)outBuff.Position;
                                     outBuff.Position = 0;
 

@@ -5,15 +5,29 @@ using System.Text;
 
 using System.Net.Sockets;
 
+using ProsthesisCore.Utility;
 using ProsthesisCore.Messages;
 
 namespace ProsthesisClientTest
 {
     sealed class ClientTest
     {
+        private static Logger mLogger = null;
         static void Main(string[] args)
         {
+            string fileName = string.Format("ClientTest-{0}.txt", System.DateTime.Now.ToString("dd MMM yyyy HH-mm-ss"));
+            mLogger = new Logger(fileName, true);
             TcpClient client = new TcpClient();
+
+            //Safely shut down app
+            AppDomain.CurrentDomain.ProcessExit += delegate(object sender, EventArgs e)
+            {
+                if (client.Connected)
+                {
+                    client.Close();
+                }
+                mLogger.ShutDown();
+            };
 
             ProsthesisCore.ProsthesisPacketParser packetParser = new ProsthesisCore.ProsthesisPacketParser();
 
@@ -23,20 +37,20 @@ namespace ProsthesisClientTest
             }
             catch (SocketException ex)
             {
-                Console.WriteLine(string.Format("Couldn't connect. Reason: {0}", ex));
+                mLogger.LogMessage(Logger.LoggerChannels.Faults, string.Format("Couldn't connect. Reason: {0}", ex));
             }
             finally
             {
                 if (client.Connected)
                 {
-                    Console.WriteLine(string.Format("Connected to server!"));
+                    mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Connected to server!"));
                     NetworkStream stream = client.GetStream();
                     stream.Flush();
                     ProsthesisCore.Messages.ProsthesisHandshakeRequest req = new ProsthesisCore.Messages.ProsthesisHandshakeRequest();
                     req.VersionId = ProsthesisCore.ProsthesisConstants.OSVersion;
 
                     System.Threading.Thread.Sleep(1000);
-                    for (int i = 0; i < 100; ++i)
+                   // for (int i = 0; i < 100; ++i)
                     {
                         ProsthesisDataPacket packet = ProsthesisDataPacket.BoxMessage<ProsthesisHandshakeRequest>(req);                       
                         stream.Write(packet.Bytes, 0, packet.Bytes.Length);
@@ -65,14 +79,14 @@ namespace ProsthesisClientTest
                                             if (msg is ProsthesisCore.Messages.ProsthesisHandshakeResponse)
                                             {
                                                 ProsthesisCore.Messages.ProsthesisHandshakeResponse hsResp = msg as ProsthesisCore.Messages.ProsthesisHandshakeResponse;
-                                                Console.WriteLine(string.Format("Got response. Auth is {0}", hsResp.AuthorizedConnection));
+                                                mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Got response. Auth is {0}", hsResp.AuthorizedConnection));
                                             }
                                         }
                                     }
                                 }
                                 catch (Exception e)
                                 {
-                                    Console.WriteLine(string.Format("Caught proto exception {0}", e));
+                                    mLogger.LogMessage(Logger.LoggerChannels.Faults, string.Format("Caught proto exception {0}", e));
                                 }
                             }
                         }
@@ -81,6 +95,8 @@ namespace ProsthesisClientTest
                     client.Close();
                 }
             }
+
+            mLogger.ShutDown();
         }
     }
 }

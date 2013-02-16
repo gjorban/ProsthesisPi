@@ -22,119 +22,20 @@ namespace ProsthesisClientTest
         private static Logger mLogger = null;
         private static ProsthesisCore.ProsthesisPacketParser mPacketParser = new ProsthesisCore.ProsthesisPacketParser();
 
-        #region Data Callbacks
-        private static AsyncCallback mConnectionCallback = null;
-        private static AsyncCallback mDataReadyCallback = null;
-        private static WaitCallback mDataWaitCallback = null;
-
         private static ManualResetEvent mWaitForConnect = new ManualResetEvent(false);
 
-        private static void StartDataConnection(object state)
+        private static void OnDataPacketReceive(ProsthesisSocketClient source, byte[] data, int len)
         {
-            ConnectionState st = state as ConnectionState;
-            st.Client.Client.BeginReceive(st.Buffer, 0, 0, SocketFlags.None, mDataReadyCallback, st);
+            mPacketParser.AddData(data, len);
         }
-
-        private static void ConnectionReady_Handler(IAsyncResult ar)
-        {
-            try
-            {
-                ConnectionState st = ar.AsyncState as ConnectionState;
-                st.Client.EndConnect(ar);
-                if (st.Client.Connected)
-                {
-                    mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Connected to server!"));
-                    //Queue the rest of the job to be executed latter
-                    ThreadPool.QueueUserWorkItem(mDataWaitCallback, st);
-                }
-                else
-                {
-                    mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Unable to connect to {0}", st.Client.Client.RemoteEndPoint.AddressFamily.ToString()));
-                }
-            }
-            catch (Exception e)
-            {
-                mLogger.LogMessage(Logger.LoggerChannels.Faults, string.Format("Connection exception: {0}", e));
-            }
-            finally
-            {
-                mWaitForConnect.Set();
-            }
-        }
-
-        private static void DataReady_Handler(IAsyncResult ar)
-        {
-            ConnectionState st = ar.AsyncState as ConnectionState;
-            try
-            {
-                if (st.Client == null || !st.Client.Connected)
-                {
-                    return;
-                }
-                st.Client.Client.EndReceive(ar);
-            }
-            catch
-            {
-                //DropConnection(st);
-                return;
-            }
-
-            //Receive data here
-            NetworkStream stream = st.Client.GetStream();
-            while (stream.DataAvailable)
-            {
-                byte[] buff = new byte[1024];
-                int readCount = stream.Read(buff, 0, 1024);
-                if (readCount > 0)
-                {
-                    mPacketParser.AddData(buff, readCount);
-
-                    try
-                    {
-                        while (mPacketParser.MoveNext())
-                        {
-                            ProsthesisCore.Messages.ProsthesisMessage msg = mPacketParser.Current;
-                            if (msg != null)
-                            {
-                                if (msg is ProsthesisCore.Messages.ProsthesisHandshakeResponse)
-                                {
-                                    ProsthesisCore.Messages.ProsthesisHandshakeResponse hsResp = msg as ProsthesisCore.Messages.ProsthesisHandshakeResponse;
-                                    mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Got response. Auth is {0}", hsResp.AuthorizedConnection));
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        mLogger.LogMessage(Logger.LoggerChannels.Faults, string.Format("Caught proto exception {0}", e));
-                    }
-                }
-            }
-
-            if (!st.Client.Connected)
-            {
-                return;
-            }
-            else
-            {
-                st.Client.Client.BeginReceive(st.Buffer, 0, 0, SocketFlags.None,
-                    mDataReadyCallback, st);
-            }
-        }
-        #endregion
 
         static void Main(string[] args)
         {
             string fileName = string.Format("ClientTest-{0}.txt", System.DateTime.Now.ToString("dd MMM yyyy HH-mm-ss"));
             mLogger = new Logger(fileName, true);
-            TcpClient client = new TcpClient();
-            ConnectionState state = new ConnectionState();
-            state.Client = client;
-            state.Buffer = new byte[4];
-
-            mConnectionCallback = new AsyncCallback(ConnectionReady_Handler);
-            mDataReadyCallback = new AsyncCallback(DataReady_Handler);
-            mDataWaitCallback = new WaitCallback(StartDataConnection);
+            ProsthesisSocketClient client = new ProsthesisSocketClient(OnDataPacketReceive, "127.0.0.1", ProsthesisCore.ProsthesisConstants.ConnectionPort, mLogger);
+            client.ConnectFinished += new Action<ProsthesisSocketClient, bool>(OnConnectFinished);
+            client.ConnectionClosed += new Action<ProsthesisSocketClient>(OnConnectionClosed);
 
             //Safely shut down app
             AppDomain.CurrentDomain.ProcessExit += delegate(object sender, EventArgs e)
@@ -143,17 +44,20 @@ namespace ProsthesisClientTest
                 {
                     if (client != null && client.Connected)
                     {
-                        client.Close();
+                        client.Shutdown();
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    mLogger.LogMessage(Logger.LoggerChannels.Faults, string.Format("Exception shutting down socket client: {0}", ex));
+                }
 
                 mLogger.ShutDown();
             };
 
             try
             {
-                client.BeginConnect("127.0.0.1", ProsthesisCore.ProsthesisConstants.ConnectionPort, mConnectionCallback, state);
+                client.StartConnect();
             }
             catch (SocketException ex)
             {
@@ -161,32 +65,64 @@ namespace ProsthesisClientTest
             }
             finally
             {
-
                 mLogger.LogMessage("Waiting for connection to server");
                 mWaitForConnect.WaitOne();
                 
                 ProsthesisCore.Messages.ProsthesisHandshakeRequest req = new ProsthesisCore.Messages.ProsthesisHandshakeRequest();
                 req.VersionId = ProsthesisCore.ProsthesisConstants.OSVersion;
 
-
                 if (client.Connected)
                 {
                     ProsthesisDataPacket packet = ProsthesisDataPacket.BoxMessage<ProsthesisHandshakeRequest>(req);
-                    client.Client.Send(packet.Bytes, 0, packet.Bytes.Length, SocketFlags.None);
+                    client.Send(packet.Bytes, 0, packet.Bytes.Length);
 
-                    ConsoleKey key;
+                    ConsoleKey key = ConsoleKey.A;
                     do
                     {
-                        key = Console.ReadKey().Key;
+                        while (mPacketParser.MoveNext())
+                        {
+                            ProsthesisMessage mess = mPacketParser.Current;
+                            if (mess is ProsthesisHandshakeResponse)
+                            {
+                                ProsthesisHandshakeResponse castMess = mess as ProsthesisHandshakeResponse;
+                                mLogger.LogMessage(Logger.LoggerChannels.Events, string.Format("Got handshake response. Authed? {0}", castMess.AuthorizedConnection ? "yes" : "no"));
+                            }
+                            else if (mess == null)
+                            {
+                                mLogger.LogMessage(Logger.LoggerChannels.Events, string.Format("Got a null message from packet parser"));
+                            }
+                            else
+                            {
+                                mLogger.LogMessage(Logger.LoggerChannels.Events, string.Format("Got unhandled message type: {0}", mess.GetType()));
+                            }
+                        }
+
+                        //Check 60 times per second for messages (similar to game loop)
+                        System.Threading.Thread.Sleep(16);
+
+                        if (Console.KeyAvailable)
+                        {
+                            key = Console.ReadKey().Key;
+                        }
 
                     } while (key != ConsoleKey.X);
-                    client.Close();
+                    client.Shutdown();
                 }
 
                 client = null;
             }
 
             mLogger.ShutDown();
+        }
+
+        static void OnConnectionClosed(ProsthesisSocketClient obj)
+        {
+
+        }
+
+        static void OnConnectFinished(ProsthesisSocketClient arg1, bool arg2)
+        {
+            mWaitForConnect.Set();
         }
     }
 }

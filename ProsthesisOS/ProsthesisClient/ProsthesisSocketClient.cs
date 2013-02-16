@@ -10,7 +10,7 @@ using ProsthesisCore.Utility;
 
 namespace ProsthesisClientTest
 {
-    internal class ProsthesisSocketClient
+    public sealed class ProsthesisSocketClient
     {
         public delegate void OnSocketDataReceive(ProsthesisSocketClient source, byte[] data, int numBytes);
         /// <summary>

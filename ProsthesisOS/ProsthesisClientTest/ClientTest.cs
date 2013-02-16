@@ -27,7 +27,7 @@ namespace ProsthesisClientTest
         {
             string fileName = string.Format("ClientTest-{0}.txt", System.DateTime.Now.ToString("dd MMM yyyy HH-mm-ss"));
             mLogger = new Logger(fileName, true);
-            ProsthesisSocketClient client = new ProsthesisSocketClient(OnDataPacketReceive, "192.168.0.18", ProsthesisCore.ProsthesisConstants.ConnectionPort, mLogger);
+            ProsthesisSocketClient client = new ProsthesisSocketClient(OnDataPacketReceive, "127.0.0.1", ProsthesisCore.ProsthesisConstants.ConnectionPort, mLogger);
             client.ConnectFinished += new Action<ProsthesisSocketClient, bool>(OnConnectFinished);
             client.ConnectionClosed += new Action<ProsthesisSocketClient>(OnConnectionClosed);
 

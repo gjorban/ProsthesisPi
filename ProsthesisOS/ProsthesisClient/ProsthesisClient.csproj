@@ -2,20 +2,18 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{370903A5-8128-4E01-BB25-EDBE9734C453}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{CF4C8DC4-1868-4C85-ABE4-99EE35BE8BDC}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ProsthesisClientTest</RootNamespace>
-    <AssemblyName>ProsthesisClientTest</AssemblyName>
+    <RootNamespace>ProsthesisClient</RootNamespace>
+    <AssemblyName>ProsthesisClient</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -24,8 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -34,8 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="protobuf-net, Version=2.0.0.622, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="protobuf-net">
       <HintPath>..\ProsthesisCore\lib\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -47,14 +43,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClientTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProsthesisSocketClient.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ProsthesisClient\ProsthesisClient.csproj">
-      <Project>{CF4C8DC4-1868-4C85-ABE4-99EE35BE8BDC}</Project>
-      <Name>ProsthesisClient</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ProsthesisCore\ProsthesisCore.csproj">
       <Project>{25C3E224-9C88-495E-AB0A-4CF5D411F70F}</Project>
       <Name>ProsthesisCore</Name>

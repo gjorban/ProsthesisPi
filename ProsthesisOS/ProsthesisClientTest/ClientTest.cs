@@ -13,12 +13,6 @@ namespace ProsthesisClientTest
 {
     sealed class ClientTest
     {
-        private class ConnectionState
-        {
-            public TcpClient Client = null;
-            public byte[] Buffer = null;
-        }
-
         private static Logger mLogger = null;
         private static ProsthesisCore.ProsthesisPacketParser mPacketParser = new ProsthesisCore.ProsthesisPacketParser();
 

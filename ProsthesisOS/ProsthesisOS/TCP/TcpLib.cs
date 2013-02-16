@@ -5,7 +5,7 @@ using System.Threading;
 using System.Text;
 using System.Collections;
 
-namespace TcpLib
+namespace ProsthesisOS.TCP
 {
     /// <SUMMARY>
     /// This class holds useful information for keeping track of each client connected
@@ -97,8 +97,6 @@ namespace TcpLib
         }
     }
 
-
-
     /// <SUMMARY>
     /// Allows to provide the server with the actual code that is goint to service
     /// incoming connections.
@@ -130,15 +128,13 @@ namespace TcpLib
         public abstract void OnDropConnection(ConnectionState state);
     }
 
-
-
     public class TcpServer
     {
-        private int _port;
-        private Socket _listener;
-        private TcpServiceProvider _provider;
-        private ArrayList _connections;
-        private int _maxConnections = 100;
+        private int mPort;
+        private Socket mListener;
+        private TcpServiceProvider mProvider;
+        private ArrayList mConnections;
+        private int mMaxConnections = 100;
 
         private AsyncCallback ConnectionReady;
         private WaitCallback AcceptConnection;
@@ -146,7 +142,7 @@ namespace TcpLib
 
         public bool Active
         {
-            get { return _listener != null ? _listener.Connected : false; }
+            get { return mListener != null ? mListener.Connected : false; }
         }
 
         /// <SUMMARY>
@@ -154,11 +150,11 @@ namespace TcpLib
         /// </SUMMARY>
         public TcpServer(TcpServiceProvider provider, int port)
         {
-            _provider = provider;
-            _port = port;
-            _listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream,
+            mProvider = provider;
+            mPort = port;
+            mListener = new Socket(AddressFamily.InterNetwork, SocketType.Stream,
               ProtocolType.Tcp);
-            _connections = new ArrayList();
+            mConnections = new ArrayList();
             ConnectionReady = new AsyncCallback(ConnectionReady_Handler);
             AcceptConnection = new WaitCallback(AcceptConnection_Handler);
             ReceivedDataReady = new AsyncCallback(ReceivedDataReady_Handler);
@@ -173,9 +169,9 @@ namespace TcpLib
         {
             try
             {
-                _listener.Bind(new IPEndPoint(IPAddress.Parse("127.0.0.1"), _port));
-                _listener.Listen(100);
-                _listener.BeginAccept(ConnectionReady, null);
+                mListener.Bind(new IPEndPoint(IPAddress.Any, mPort));
+                mListener.Listen(100);
+                mListener.BeginAccept(ConnectionReady, null);
                 return true;
             }
             catch
@@ -192,13 +188,13 @@ namespace TcpLib
         {
             lock (this)
             {
-                if (_listener == null)
+                if (mListener == null)
                 {
                     return;
                 }
 
-                Socket conn = _listener.EndAccept(ar);
-                if (_connections.Count >= _maxConnections)
+                Socket conn = mListener.EndAccept(ar);
+                if (mConnections.Count >= mMaxConnections)
                 {
                     //Max number of connections reached.
                     string msg = "SE001: Server busy";
@@ -212,14 +208,14 @@ namespace TcpLib
                     ConnectionState st = new ConnectionState();
                     st._conn = conn;
                     st._server = this;
-                    st._provider = (TcpServiceProvider)_provider.Clone();
+                    st._provider = (TcpServiceProvider)mProvider.Clone();
                     st._buffer = new byte[4];
-                    _connections.Add(st);
+                    mConnections.Add(st);
                     //Queue the rest of the job to be executed latter
                     ThreadPool.QueueUserWorkItem(AcceptConnection, st);
                 }
                 //Resume the listening callback loop
-                _listener.BeginAccept(ConnectionReady, null);
+                mListener.BeginAccept(ConnectionReady, null);
             }
         }
 
@@ -294,10 +290,10 @@ namespace TcpLib
         {
             lock (this)
             {
-                _listener.Close();
-                _listener = null;
+                mListener.Close();
+                mListener = null;
                 //Close all active connections
-                foreach (object obj in _connections)
+                foreach (object obj in mConnections)
                 {
                     ConnectionState st = obj as ConnectionState;
                     try 
@@ -311,7 +307,7 @@ namespace TcpLib
                     st._conn.Shutdown(SocketShutdown.Both);
                     st._conn.Close();
                 }
-                _connections.Clear();
+                mConnections.Clear();
             }
         }
 
@@ -326,9 +322,9 @@ namespace TcpLib
                 st._provider.OnDropConnection(st);
                 st._conn.Shutdown(SocketShutdown.Both);
                 st._conn.Close();
-                if (_connections.Contains(st))
+                if (mConnections.Contains(st))
                 {
-                    _connections.Remove(st);
+                    mConnections.Remove(st);
                 }
             }
         }
@@ -338,11 +334,11 @@ namespace TcpLib
         {
             get
             {
-                return _maxConnections;
+                return mMaxConnections;
             }
             set
             {
-                _maxConnections = value;
+                mMaxConnections = value;
             }
         }
 
@@ -351,7 +347,7 @@ namespace TcpLib
         {
             get
             {
-                lock (this) { return _connections.Count; }
+                lock (this) { return mConnections.Count; }
             }
         }
     }

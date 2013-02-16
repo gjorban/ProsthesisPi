@@ -7,8 +7,6 @@ using ProsthesisCore;
 using ProsthesisCore.Utility;
 using ProsthesisCore.Messages;
 
-using TcpLib;
-
 namespace ProsthesisOS.TCP
 {
     sealed class HandshakeService : TcpServiceProvider

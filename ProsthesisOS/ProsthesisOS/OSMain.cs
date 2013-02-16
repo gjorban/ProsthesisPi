@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using TcpLib;
+using ProsthesisOS.TCP;
 
 namespace ProsthesisOS
 {
@@ -14,7 +14,7 @@ namespace ProsthesisOS
 
         public static void Main(string[] args)
         {
-            string fileName = string.Format("Server-{0}.txt", System.DateTime.Now.ToString("dd MMM yyyy HH-mm-ss"));
+            string fileName = string.Format("Server-{0}.txt", System.DateTime.Now.ToString("dd MM yyyy HH-mm-ss"));
             mLogger = new ProsthesisCore.Utility.Logger(fileName, true);
 
             mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.General, "ProsthesisOS startup", true);

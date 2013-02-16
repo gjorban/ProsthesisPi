@@ -23,7 +23,7 @@ namespace ProsthesisClientTest
         public event Action<ProsthesisSocketClient> ConnectionClosed = null;
 
         /// <summary>
-        /// Called to signal that data is available on the socket. This is guarantee to be called from another thread.
+        /// Called to signal that data is available on the socket. This is guaranteed to be called from another thread.
         /// </summary>
         private OnSocketDataReceive OnDataReceive = null;
 
@@ -104,6 +104,7 @@ namespace ProsthesisClientTest
         /// Sends the specified bytes over the socket if connected
         /// </summary>
         /// <param name="data"></param>
+        /// <param name="offset"></param>
         /// <param name="len"></param>
         public bool Send(byte[] data, int offset, int len)
         {
@@ -116,7 +117,6 @@ namespace ProsthesisClientTest
                 return false;
             }
         }
-
 
         #region Async callbacks
         private void OnConnection(IAsyncResult rs)
@@ -202,32 +202,10 @@ namespace ProsthesisClientTest
                         {
                             mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Exception caught when firing OnData callback: {0}", e));
                         }
-                        /*  mPacketParser.AddData(buff, readCount);
-
-                          try
-                          {
-                              while (mPacketParser.MoveNext())
-                              {
-                                  ProsthesisCore.Messages.ProsthesisMessage msg = mPacketParser.Current;
-                                  if (msg != null)
-                                  {
-                                      if (msg is ProsthesisCore.Messages.ProsthesisHandshakeResponse)
-                                      {
-                                          ProsthesisCore.Messages.ProsthesisHandshakeResponse hsResp = msg as ProsthesisCore.Messages.ProsthesisHandshakeResponse;
-                                          mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Got response. Auth is {0}", hsResp.AuthorizedConnection));
-                                      }
-                                  }
-                              }
-                          }
-                          catch (Exception e)
-                          {
-                              mLogger.LogMessage(Logger.LoggerChannels.Faults, string.Format("Caught proto exception {0}", e));
-                          }*/
                     }
                 }
 
-                Client.Client.BeginReceive(mBuffer, 0, 0, SocketFlags.None,
-                    mDataReadyCallback, this);
+                Client.Client.BeginReceive(mBuffer, 0, 0, SocketFlags.None, mDataReadyCallback, this);
             }
         }
         #endregion

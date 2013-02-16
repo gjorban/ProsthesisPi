@@ -5,6 +5,8 @@ using System.Text;
 
 using System.Net.Sockets;
 
+using ProsthesisCore.Messages;
+
 namespace ProsthesisClientTest
 {
     sealed class ClientTest
@@ -36,16 +38,8 @@ namespace ProsthesisClientTest
                     System.Threading.Thread.Sleep(1000);
                     for (int i = 0; i < 100; ++i)
                     {
-                        byte[] data = new byte[1024];
-                        System.IO.MemoryStream dataStream = new System.IO.MemoryStream(data);
-                        ProtoBuf.Serializer.Serialize<ProsthesisCore.Messages.ProsthesisHandshakeRequest>(dataStream, req);
-                        int usedBytes = (int)dataStream.Position;
-
-                        dataStream.Position = 0;
-
-                        ProsthesisCore.Messages.ProsthesisDataPacket packet = new ProsthesisCore.Messages.ProsthesisDataPacket(dataStream.ToArray(), usedBytes);
-                        byte[] packetData = packet.Bytes;
-                        stream.Write(packetData, 0, packetData.Length);
+                        ProsthesisDataPacket packet = ProsthesisDataPacket.BoxMessage<ProsthesisHandshakeRequest>(req);                       
+                        stream.Write(packet.Bytes, 0, packet.Bytes.Length);
                     }
 
                     ConsoleKey key;

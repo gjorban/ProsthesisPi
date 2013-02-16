@@ -32,6 +32,39 @@ namespace ProsthesisCore.Messages
     [ProtoContract]
     public class ProsthesisDataPacket
     {
+        public static ProsthesisDataPacket BoxMessage<T>(T message) where T : ProsthesisMessage
+        {
+            try
+            {
+                System.IO.MemoryStream outBuff = new System.IO.MemoryStream();
+                ProtoBuf.Serializer.SerializeWithLengthPrefix<T>(outBuff, message, ProtoBuf.PrefixStyle.Fixed32);
+
+                int dataSize = (int)outBuff.Position;
+                outBuff.Position = 0;
+
+                return new ProsthesisDataPacket(outBuff.ToArray(), dataSize);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static ProsthesisMessage UnboxMessage(ProsthesisDataPacket packet)
+        {
+            try
+            {
+                System.IO.MemoryStream memStream = new System.IO.MemoryStream(packet.Data);
+                memStream.Position = 0;
+                ProsthesisMessage mess = ProtoBuf.Serializer.DeserializeWithLengthPrefix<ProsthesisMessage>(memStream, PrefixStyle.Fixed32);
+                return mess;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         public static int HeaderSize
         {
             get { return sizeof(uint) + sizeof(int); }

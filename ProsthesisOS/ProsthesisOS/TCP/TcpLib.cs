@@ -89,6 +89,7 @@ namespace TcpLib
         {
             if (_conn != null && _conn.Connected)
             {
+                _provider.OnDropConnection(this);
                 _conn.Shutdown(SocketShutdown.Both);
                 _conn.Close();
             }

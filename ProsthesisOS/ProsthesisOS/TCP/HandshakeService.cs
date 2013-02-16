@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 
 using ProsthesisCore;
+using ProsthesisCore.Utility;
+using ProsthesisCore.Messages;
 
 using TcpLib;
 
@@ -11,6 +13,14 @@ namespace ProsthesisOS.TCP
 {
     sealed class HandshakeService : TcpServiceProvider
     {
+        private Dictionary<ConnectionState, ProsthesisCore.ProsthesisPacketParser> mParsers = new Dictionary<ConnectionState, ProsthesisPacketParser>();
+        private System.IO.MemoryStream mReceiveBuffer = new System.IO.MemoryStream(1024);
+
+        private Logger mLogger
+        {
+            get { return ProsthesisOS.Program.Logger; }
+        }
+
         public override object Clone()
         {
             return new HandshakeService();
@@ -18,16 +28,18 @@ namespace ProsthesisOS.TCP
 
         public override void OnAcceptConnection(ConnectionState state)
         {
-            Console.WriteLine(string.Format("Received connection from {0}", state.RemoteEndPoint));
+            mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Received connection from {0}", state.RemoteEndPoint));
+            if (!mParsers.ContainsKey(state))
+            {
+                mParsers[state] = new ProsthesisPacketParser();
+            }
         }
 
         public override void OnDropConnection(ConnectionState state)
         {
-            Console.WriteLine(string.Format("Dropped connection from {0}", state.RemoteEndPoint));
+            mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Dropped connection from {0}", state.RemoteEndPoint));
+            mParsers.Remove(state);
         }
-
-        private System.IO.MemoryStream mReceiveBuffer = new System.IO.MemoryStream(1024);
-        private ProsthesisCore.ProsthesisPacketParser mParser = new ProsthesisPacketParser();
 
         public override void OnReceiveData(ConnectionState state)
         {
@@ -37,105 +49,79 @@ namespace ProsthesisOS.TCP
                 int readCount = state.Read(buffer, 0, (int)(mReceiveBuffer.Capacity - mReceiveBuffer.Position));
                 if (readCount > 0)
                 {
-                    mParser.AddData(buffer, readCount);
+                    //Drop connection if we are missing a packet parser
+                    if (!mParsers.ContainsKey(state))
+                    {
+                        mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Dropped connection to {0} because its parser was missing.", GetIPFor(state.RemoteEndPoint)));
+                        state._server.DropConnection(state);
+                        return;
+                    }
+
+                    ProsthesisPacketParser parser = mParsers[state];
+                    parser.AddData(buffer, readCount);
                     try
                     {
-                        while (mParser.MoveNext())
+                        while (parser.MoveNext())
                         {
-                            ProsthesisCore.Messages.ProsthesisMessage msg = mParser.Current;
-                            if (msg is ProsthesisCore.Messages.ProsthesisHandshakeRequest)
+                            ProsthesisMessage msg = parser.Current;
+                            if (msg == null)
                             {
-                                ProsthesisCore.Messages.ProsthesisHandshakeRequest hsR = msg as ProsthesisCore.Messages.ProsthesisHandshakeRequest;
-
-                                Console.WriteLine(string.Format("Received handshake w/ Version ID {0}", hsR.VersionId));
-
-
-                                ProsthesisCore.Messages.ProsthesisHandshakeResponse hsResp = new ProsthesisCore.Messages.ProsthesisHandshakeResponse();
-                                if (hsR.VersionId == ProsthesisCore.ProsthesisConstants.OSVersion)
-                                {
-                                    hsResp.AuthorizedConnection = true;
-                                    hsResp.ErrorString = string.Empty;
-                                    System.IO.MemoryStream outBuff = new System.IO.MemoryStream();
-                                    ProtoBuf.Serializer.Serialize<ProsthesisCore.Messages.ProsthesisHandshakeResponse>(outBuff, hsResp);
-                                    int dataSize = (int)outBuff.Position;
-                                    outBuff.Position = 0;
-
-                                    byte[] outData = new ProsthesisCore.Messages.ProsthesisDataPacket(outBuff.ToArray(), dataSize).Bytes;
-
-                                    state.Write(outData, 0, (int)outData.Length);
-                                    Console.WriteLine(string.Format("Client version equals ours({0}). Accepting connection", ProsthesisCore.ProsthesisConstants.OSVersion));
-                                }
-                                else
-                                {
-                                   /* Console.WriteLine(string.Format("Client version ID doesn't match ours(ours: {0}. Theirs: {1}). Rejecting Connection", ProsthesisCore.ProsthesisConstants.OSVersion, hsR.VersionId));
-                                    hsResp.AuthorizedConnection = false;
-                                    hsResp.ErrorString = string.Format("Version mismatch. Server is {0} but client sent {1}", ProsthesisCore.ProsthesisConstants.OSVersion, hsR.VersionId);
-
-                                    System.IO.MemoryStream outBuff = new System.IO.MemoryStream();
-                                    ProtoBuf.Serializer.SerializeWithLengthPrefix<ProsthesisCore.Messages.ProsthesisHandshakeResponse>(outBuff, hsResp, ProtoBuf.PrefixStyle.Fixed32);
-
-                                    state.Write(outBuff.ToArray(), 0, (int)outBuff.Length);
-
-                                    state.EndConnection();
-                                    return;*/
-                                }
-
+                                mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Failed to parse packet from {0}. Dropping connection", GetIPFor(state.RemoteEndPoint)));
+                                state._server.DropConnection(state);
                             }
-                        }
-                     /*   ProsthesisCore.Messages.ProsthesisMessage msg = ProtoBuf.Serializer.DeserializeWithLengthPrefix<ProsthesisCore.Messages.ProsthesisMessage>(mReceiveBuffer, ProtoBuf.PrefixStyle.Fixed32);
-
-                        if (msg != null)
-                        {
-                            if (msg is ProsthesisCore.Messages.ProsthesisHandshakeRequest)
+                            else if (msg is ProsthesisHandshakeRequest)
                             {
-                                ProsthesisCore.Messages.ProsthesisHandshakeRequest hsR = msg as ProsthesisCore.Messages.ProsthesisHandshakeRequest;
+                                ProsthesisHandshakeRequest hsR = msg as ProsthesisHandshakeRequest;
 
-                                Console.WriteLine(string.Format("Received handshake w/ Version ID {0}", hsR.VersionId));
+                                mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Received handshake w/ Version ID {0} from {1}", hsR.VersionId, GetIPFor(state.RemoteEndPoint)));
 
-                                ProsthesisCore.Messages.ProsthesisHandshakeResponse hsResp = new ProsthesisCore.Messages.ProsthesisHandshakeResponse();
-
+                                ProsthesisHandshakeResponse hsResp = new ProsthesisHandshakeResponse();
                                 if (hsR.VersionId == ProsthesisCore.ProsthesisConstants.OSVersion)
                                 {
                                     hsResp.AuthorizedConnection = true;
                                     hsResp.ErrorString = string.Empty;
-                                    System.IO.MemoryStream outBuff = new System.IO.MemoryStream();
-                                    ProtoBuf.Serializer.SerializeWithLengthPrefix<ProsthesisCore.Messages.ProsthesisHandshakeResponse>(outBuff, hsResp, ProtoBuf.PrefixStyle.Fixed32);
+                                    ProsthesisDataPacket packet = ProsthesisDataPacket.BoxMessage<ProsthesisCore.Messages.ProsthesisHandshakeResponse>(hsResp);
 
-                                    state.Write(outBuff.ToArray(), 0, (int)outBuff.Length);
-                                    Console.WriteLine(string.Format("Client version equals ours({0}). Accepting connection", ProsthesisCore.ProsthesisConstants.OSVersion));
+                                    state.Write(packet.Bytes, 0, (int)packet.Bytes.Length);
+                                    mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Client version equals ours({0}). Accepting connection", ProsthesisCore.ProsthesisConstants.OSVersion));
                                 }
                                 else
                                 {
-                                    Console.WriteLine(string.Format("Client version ID doesn't match ours(ours: {0}. Theirs: {1}). Rejecting Connection", ProsthesisCore.ProsthesisConstants.OSVersion, hsR.VersionId));
+                                    mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Client version ID doesn't match ours(ours: {0}. Theirs: {1}). Rejecting Connection from {2}", 
+                                        ProsthesisCore.ProsthesisConstants.OSVersion, 
+                                        hsR.VersionId,
+                                        GetIPFor(state.RemoteEndPoint)));
+
                                     hsResp.AuthorizedConnection = false;
                                     hsResp.ErrorString = string.Format("Version mismatch. Server is {0} but client sent {1}", ProsthesisCore.ProsthesisConstants.OSVersion, hsR.VersionId);
 
-                                    System.IO.MemoryStream outBuff = new System.IO.MemoryStream();
-                                    ProtoBuf.Serializer.SerializeWithLengthPrefix<ProsthesisCore.Messages.ProsthesisHandshakeResponse>(outBuff, hsResp, ProtoBuf.PrefixStyle.Fixed32);
+                                    ProsthesisDataPacket packet = ProsthesisDataPacket.BoxMessage<ProsthesisCore.Messages.ProsthesisHandshakeResponse>(hsResp);
 
-                                    state.Write(outBuff.ToArray(), 0, (int)outBuff.Length);
-
-                                    state.EndConnection();
+                                    state.Write(packet.Bytes, 0, (int)packet.Bytes.Length);
+                                    state._server.DropConnection(state);
                                     return;
                                 }
                             }
-                            else
-                            {
-                                Console.WriteLine(string.Format("Got a message of type {0} but I don't understand it. Ignoring", msg.GetType()));
-                            }
-                        }*/
+                        }
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(string.Format("Caught protobuf exception {0}", e));
+                        mLogger.LogMessage(Logger.LoggerChannels.Faults, string.Format("Caught protobuf exception {0} receiving data from {1}. Closing connection", e, GetIPFor(state.RemoteEndPoint)));
+                        state._server.DropConnection(state);
                     }
                 }
                 else
                 {
                     //If read fails then close connection
-                    state.EndConnection(); 
+                    mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Read failed from {0}. Dropping connection", GetIPFor(state.RemoteEndPoint)));
+                    state._server.DropConnection(state);
                 }
             }
+        }
+
+        private static string GetIPFor(System.Net.EndPoint endPoint)
+        {
+            return ((System.Net.IPEndPoint)endPoint).Address.ToString();
         }
     }
 }

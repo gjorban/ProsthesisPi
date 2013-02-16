@@ -39,6 +39,20 @@ namespace ProsthesisCore.Utility
         {
             if (mWriter != null)
             {
+                lock (this)
+                {
+                    while (mQueuedMessagesForOutput.Count > 0)
+                    {
+                        string message = mQueuedMessagesForOutput.Dequeue();
+                        mWriter.WriteLine(message);
+                        if (mPrintToConsole)
+                        {
+                            Console.WriteLine(message);
+                        }
+                    }
+                }
+
+                mWriter.Flush();
                 mWriter.Close();
                 mWriter = null;
             }

@@ -9,8 +9,15 @@ using ProsthesisCore.Messages;
 
 namespace ProsthesisOS.TCP
 {
-    sealed class HandshakeService : TcpServiceProvider
+    sealed class ProsthesisSocketHandler : TcpServiceProvider
     {
+        public delegate void MessageAvailableDelegate(ProsthesisCore.Messages.ProsthesisMessage message, ConnectionState state);
+        public event MessageAvailableDelegate MessageAvailable = null;
+
+        public delegate void SocketConnectionDelegate(ConnectionState state);
+        public event SocketConnectionDelegate Connection = null;
+        public event SocketConnectionDelegate Disconnection = null;
+
         private Dictionary<ConnectionState, ProsthesisCore.ProsthesisPacketParser> mParsers = new Dictionary<ConnectionState, ProsthesisPacketParser>();
         private System.IO.MemoryStream mReceiveBuffer = new System.IO.MemoryStream(1024);
 
@@ -21,7 +28,11 @@ namespace ProsthesisOS.TCP
 
         public override object Clone()
         {
-            return new HandshakeService();
+            ProsthesisSocketHandler handler = new ProsthesisSocketHandler();
+            handler.Connection = Connection;
+            handler.Disconnection = Disconnection;
+            handler.MessageAvailable = MessageAvailable;
+            return handler;
         }
 
         public override void OnAcceptConnection(ConnectionState state)
@@ -31,12 +42,22 @@ namespace ProsthesisOS.TCP
             {
                 mParsers[state] = new ProsthesisPacketParser();
             }
+
+            if (Connection != null)
+            {
+                Connection(state);
+            }
         }
 
         public override void OnDropConnection(ConnectionState state)
         {
             mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Dropped connection from {0}", state.RemoteEndPoint));
             mParsers.Remove(state);
+
+            if (Disconnection != null)
+            {
+                Disconnection(state);
+            }
         }
 
         public override void OnReceiveData(ConnectionState state)
@@ -62,7 +83,7 @@ namespace ProsthesisOS.TCP
                         while (parser.MoveNext())
                         {
                             ProsthesisMessage msg = parser.Current;
-                            if (msg == null)
+                          /*  if (msg == null)
                             {
                                 mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Failed to parse packet from {0}. Dropping connection", GetIPFor(state.RemoteEndPoint)));
                                 state._server.DropConnection(state);
@@ -99,6 +120,10 @@ namespace ProsthesisOS.TCP
                                     state._server.DropConnection(state);
                                     return;
                                 }
+                            }*/
+                            if (MessageAvailable != null)
+                            {
+                                MessageAvailable(msg, state);
                             }
                         }
                     }

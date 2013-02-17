@@ -6,6 +6,7 @@ namespace ProsthesisCore.Messages
 {
     [ProtoInclude(1,typeof(ProsthesisHandshakeRequest))]
     [ProtoInclude(2, typeof(ProsthesisHandshakeResponse))]
+    [ProtoInclude(3, typeof(ProsthesisCommand))]
     [ProtoContract]
     public abstract class ProsthesisMessage { }
 
@@ -27,6 +28,13 @@ namespace ProsthesisCore.Messages
         public bool AuthorizedConnection;
         [ProtoMember(3)]
         public string ErrorString;
+    }
+
+    [ProtoContract]
+    public class ProsthesisCommand : ProsthesisMessage
+    {
+        [ProtoMember(1)]
+        public ProsthesisConstants.ProsthesisCommand Command;
     }
 
     [ProtoContract]

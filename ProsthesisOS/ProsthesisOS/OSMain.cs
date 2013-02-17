@@ -16,33 +16,22 @@ namespace ProsthesisOS
         {
             string fileName = string.Format("Server-{0}.txt", System.DateTime.Now.ToString("dd MM yyyy HH-mm-ss"));
             mLogger = new ProsthesisCore.Utility.Logger(fileName, true);
-
             mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.General, "ProsthesisOS startup", true);
 
-            ProsthesisOS.TCP.HandshakeService echoSP = new ProsthesisOS.TCP.HandshakeService();
-            TcpServer server = new TcpServer(echoSP, ProsthesisCore.ProsthesisConstants.ConnectionPort);
+            States.ProsthesisContext context = new States.ProsthesisContext(ProsthesisCore.ProsthesisConstants.ConnectionPort, mLogger);
 
             //Safely shut down app
             AppDomain.CurrentDomain.ProcessExit += delegate(object sender, EventArgs e)
             {
-                if (server.Active)
+                if (context.IsRunning)
                 {
-                    server.Stop();
+                    context.Terminate("Aborted");
                 }
+
                 mLogger.ShutDown();
             };
 
-            if (server.Start())
-            {
-                Logger.LogMessage(string.Format("Started server at {0}. Press 'x' to exit", ProsthesisCore.ProsthesisConstants.ConnectionPort));
-                while (Console.ReadKey().Key != ConsoleKey.X) { }
-                server.Stop();
-            }
-            else
-            {
-                Logger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Faults, "Couldn't start server");
-                System.Threading.Thread.Sleep(1000);
-            }
+            while (Console.ReadKey().Key != ConsoleKey.X) { }
 
             mLogger.ShutDown();
         }

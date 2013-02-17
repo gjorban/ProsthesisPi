@@ -126,14 +126,14 @@ namespace ProsthesisClientTest
                 mTCPClient.EndConnect(rs);
                 if (mTCPClient.Connected)
                 {
-                    mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Successfully connected to {0}", mTCPClient.Client.RemoteEndPoint.AddressFamily));
+                    mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Successfully connected to {0}", mTCPClient.Client.RemoteEndPoint));
                     //Queue the rest of the job to be executed latter
                     ThreadPool.QueueUserWorkItem(mSocketWorkerStartCallback, this);
 
                 }
                 else
                 {
-                    mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Failed to  connection to {0}", mTCPClient.Client.RemoteEndPoint.AddressFamily));
+                    mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Failed to  connection to {0}", mTCPClient.Client.RemoteEndPoint));
                 }
 
                 if (ConnectFinished != null)

@@ -83,44 +83,6 @@ namespace ProsthesisOS.TCP
                         while (parser.MoveNext())
                         {
                             ProsthesisMessage msg = parser.Current;
-                          /*  if (msg == null)
-                            {
-                                mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Failed to parse packet from {0}. Dropping connection", GetIPFor(state.RemoteEndPoint)));
-                                state._server.DropConnection(state);
-                            }
-                            else if (msg is ProsthesisHandshakeRequest)
-                            {
-                                ProsthesisHandshakeRequest hsR = msg as ProsthesisHandshakeRequest;
-
-                                mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Received handshake w/ Version ID {0} from {1}", hsR.VersionId, GetIPFor(state.RemoteEndPoint)));
-
-                                ProsthesisHandshakeResponse hsResp = new ProsthesisHandshakeResponse();
-                                if (hsR.VersionId == ProsthesisCore.ProsthesisConstants.OSVersion)
-                                {
-                                    hsResp.AuthorizedConnection = true;
-                                    hsResp.ErrorString = string.Empty;
-                                    ProsthesisDataPacket packet = ProsthesisDataPacket.BoxMessage<ProsthesisCore.Messages.ProsthesisHandshakeResponse>(hsResp);
-
-                                    state.Write(packet.Bytes, 0, (int)packet.Bytes.Length);
-                                    mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Client version equals ours({0}). Accepting connection", ProsthesisCore.ProsthesisConstants.OSVersion));
-                                }
-                                else
-                                {
-                                    mLogger.LogMessage(Logger.LoggerChannels.Network, string.Format("Client version ID doesn't match ours(ours: {0}. Theirs: {1}). Rejecting Connection from {2}", 
-                                        ProsthesisCore.ProsthesisConstants.OSVersion, 
-                                        hsR.VersionId,
-                                        GetIPFor(state.RemoteEndPoint)));
-
-                                    hsResp.AuthorizedConnection = false;
-                                    hsResp.ErrorString = string.Format("Version mismatch. Server is {0} but client sent {1}", ProsthesisCore.ProsthesisConstants.OSVersion, hsR.VersionId);
-
-                                    ProsthesisDataPacket packet = ProsthesisDataPacket.BoxMessage<ProsthesisCore.Messages.ProsthesisHandshakeResponse>(hsResp);
-
-                                    state.Write(packet.Bytes, 0, (int)packet.Bytes.Length);
-                                    state._server.DropConnection(state);
-                                    return;
-                                }
-                            }*/
                             if (MessageAvailable != null)
                             {
                                 MessageAvailable(msg, state);

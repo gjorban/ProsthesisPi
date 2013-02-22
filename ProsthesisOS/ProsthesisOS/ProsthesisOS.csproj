@@ -59,6 +59,7 @@
     <Compile Include="States\ProsthesisStateBase.cs" />
     <Compile Include="States\OperationalSuperState.cs" />
     <Compile Include="States\ProsthesisContext.cs" />
+    <Compile Include="States\RunSelfTest.cs" />
     <Compile Include="States\Shutdown.cs" />
     <Compile Include="States\WaitForBootup.cs" />
     <Compile Include="States\WaitForConnection.cs" />

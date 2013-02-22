@@ -36,7 +36,13 @@ namespace ProsthesisOS.States
 
         public virtual ProsthesisStateBase OnProsthesisCommand(ProsthesisContext context, ProsthesisCore.ProsthesisConstants.ProsthesisCommand command, TCP.ConnectionState from)
         {
-            return this;
+            switch (command)
+            {
+            case ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Shutdown:
+                return new Shutdown();
+            default:
+                return this;
+            }
         }
 
         public virtual ProsthesisStateBase OnSocketMessage(ProsthesisContext context, ProsthesisCore.Messages.ProsthesisMessage message, TCP.ConnectionState state)

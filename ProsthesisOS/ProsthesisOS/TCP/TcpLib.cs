@@ -297,8 +297,8 @@ namespace ProsthesisOS.TCP
                 {
                     ConnectionState st = obj as ConnectionState;
                     try 
-                    { 
-                        st._provider.OnDropConnection(st); 
+                    {
+                        st._provider.OnDropConnection(st);
                     }
                     catch
                     {
@@ -319,12 +319,26 @@ namespace ProsthesisOS.TCP
         {
             lock (this)
             {
-                st._provider.OnDropConnection(st);
-                st._conn.Shutdown(SocketShutdown.Both);
-                st._conn.Close();
                 if (mConnections.Contains(st))
                 {
                     mConnections.Remove(st);
+                }
+
+                st._provider.OnDropConnection(st);
+                try
+                {
+                    st._conn.Shutdown(SocketShutdown.Both);
+                    st._conn.Close();
+                }
+                //This happens sometimes so we'll just ignore it
+                catch (ObjectDisposedException ex)
+                {
+
+                }
+                catch (System.Exception e)
+                {
+                    Program.Logger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Network,
+                        string.Format("Caught un-expected network exception: {0}", e));
                 }
             }
         }

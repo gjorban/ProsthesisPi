@@ -22,8 +22,7 @@ namespace ProsthesisOS.States
             switch (command)
             {
             case ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Initialize:
-                
-                break;
+                return new RunSelfTest();
 
             case ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Shutdown:
                 return new Shutdown();

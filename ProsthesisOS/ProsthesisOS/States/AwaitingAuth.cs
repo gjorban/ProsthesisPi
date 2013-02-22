@@ -27,7 +27,7 @@ namespace ProsthesisOS.States
             {
                 byte[] data = ProsthesisCore.Messages.ProsthesisDataPacket.BoxMessage<ProsthesisHandshakeResponse>(response).Bytes;
                 authedClient.Write(data, 0, data.Length);
-                return new OperationalSuperState();
+                return new OperationalSuperState(Program.Logger);
             }
             else
             {

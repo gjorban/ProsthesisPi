@@ -30,7 +30,8 @@ namespace ProsthesisCore.Utility
         {
             mFileName = fileOutput;
             mPrintToConsole = printToConsole;
-            mWriter = new System.IO.StreamWriter(fileOutput);
+            mWriter = new System.IO.StreamWriter(fileOutput, true);
+            mWriter.AutoFlush = true;
             mWorker = new System.Threading.Thread(DoLogging);
             mWorker.Start();
         }
@@ -105,6 +106,7 @@ namespace ProsthesisCore.Utility
                 {
                     string message = messages.Dequeue();
                     mWriter.WriteLine(message);
+                    mWriter.Flush();
                     if (mPrintToConsole)
                     {
                         Console.WriteLine(message);

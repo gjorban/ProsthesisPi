@@ -18,7 +18,7 @@ namespace ProsthesisOS
             mLogger = new ProsthesisCore.Utility.Logger(fileName, true);
             mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.General, "ProsthesisOS startup", true);
 
-            States.ProsthesisContext context = new States.ProsthesisContext(ProsthesisCore.ProsthesisConstants.ConnectionPort, mLogger);
+            States.ProsthesisMainContext context = new States.ProsthesisMainContext(ProsthesisCore.ProsthesisConstants.ConnectionPort, mLogger);
 
             //Safely shut down app
             AppDomain.CurrentDomain.ProcessExit += delegate(object sender, EventArgs e)
@@ -30,6 +30,8 @@ namespace ProsthesisOS
 
                 mLogger.ShutDown();
             };
+
+            Console.WriteLine("Press 'x' to exit");
 
             while (Console.ReadKey().Key != ConsoleKey.X) { }
 

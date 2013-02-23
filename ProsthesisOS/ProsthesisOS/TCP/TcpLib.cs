@@ -330,15 +330,14 @@ namespace ProsthesisOS.TCP
                     st._conn.Shutdown(SocketShutdown.Both);
                     st._conn.Close();
                 }
-                //This happens sometimes so we'll just ignore it
-                catch (ObjectDisposedException ex)
-                {
-
-                }
                 catch (System.Exception e)
                 {
-                    Program.Logger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Network,
-                        string.Format("Caught un-expected network exception: {0}", e));
+                    //Ignore object disposed exceptions
+                    if (!(e is ObjectDisposedException))
+                    {
+                        Program.Logger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Network,
+                            string.Format("Caught un-expected network exception: {0}", e));
+                    }
                 }
             }
         }

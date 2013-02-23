@@ -3,21 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using ProsthesisOS.States.Base;
+
 namespace ProsthesisOS.States
 {
     internal class EmergencyShutdown : ProsthesisStateBase
     {
-        public override ProsthesisStateBase OnEnter(ProsthesisContext context)
+        public EmergencyShutdown(IProsthesisContext context) : base(context) { }
+
+        public override ProsthesisStateBase OnEnter()
         {
             return this;
         }
 
-        public override void OnExit(ProsthesisContext context)
+        public override void OnExit()
         {
 
         }
 
-        public override ProsthesisStateBase OnProsthesisCommand(ProsthesisContext context, ProsthesisCore.ProsthesisConstants.ProsthesisCommand command, TCP.ConnectionState from)
+        public override ProsthesisStateBase OnProsthesisCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand command, TCP.ConnectionState from)
         {
             switch (command)
             {
@@ -26,7 +30,7 @@ namespace ProsthesisOS.States
                     break;
 
                 case ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Shutdown:
-                    return new Shutdown();
+                    return new Shutdown(mContext);
             }
             return this;
         }

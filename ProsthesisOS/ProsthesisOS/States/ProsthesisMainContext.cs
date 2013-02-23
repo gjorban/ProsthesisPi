@@ -7,9 +7,11 @@ using ProsthesisCore;
 using ProsthesisCore.Messages;
 using ProsthesisCore.Utility;
 
+using ProsthesisOS.States.Base;
+
 namespace ProsthesisOS.States
 {
-    internal class ProsthesisContext
+    internal class ProsthesisMainContext : ProsthesisOS.States.Base.IProsthesisContext
     {
         public ProsthesisStateBase CurrentState { get { return mCurrentState; } }
         public TCP.TcpServer TCPServer { get { return mSocketConnection; } }
@@ -17,7 +19,6 @@ namespace ProsthesisOS.States
         public Logger Logger { get { return mLogger; } }
         public bool IsRunning { get { return mRunning; } }
 
-        public delegate void ProsthesisStateChangeDelegate(ProsthesisStateBase from, ProsthesisStateBase to);
         public event ProsthesisStateChangeDelegate StateChanged = null;
 
         private ProsthesisStateBase mCurrentState = null;
@@ -29,7 +30,7 @@ namespace ProsthesisOS.States
         private TCP.ConnectionState mAuthorizedConnection = null;
         private System.Threading.ManualResetEvent mMachineActiveWait = new System.Threading.ManualResetEvent(false);
 
-        public ProsthesisContext(int tcpPort, Logger logger)
+        public ProsthesisMainContext(int tcpPort, Logger logger)
         {
             mSocketConnection = new TCP.TcpServer(mSocketServer, tcpPort);
 
@@ -40,12 +41,17 @@ namespace ProsthesisOS.States
             mLogger = logger;
             mLogger.LogMessage(Logger.LoggerChannels.StateMachine, "State machine initializing");
             mMachineActiveWait.Reset();
-            ChangeState(new States.Initialize());
+            ChangeState(new States.Initialize(this));
         }
 
         public void Restart()
         {
             throw new NotImplementedException();
+        }
+
+        public void RaiseFault(string description)
+        {
+            Terminate(description);
         }
 
         public void Terminate(string reason)
@@ -56,7 +62,7 @@ namespace ProsthesisOS.States
             mRunning = false;
         }
 
-        private void ChangeState(ProsthesisStateBase to)
+        public void ChangeState(ProsthesisStateBase to)
         {
             ProsthesisStateBase oldState = mCurrentState;
             ProsthesisStateBase chainedState = null;
@@ -65,12 +71,12 @@ namespace ProsthesisOS.States
             {
                 if (mCurrentState != null)
                 {
-                    mCurrentState.OnExit(this);
+                    mCurrentState.OnExit();
                 }
 
                 if (to != null)
                 {
-                    chainedState = to.OnEnter(this);
+                    chainedState = to.OnEnter();
                 }
                 mCurrentState = to;
 
@@ -93,13 +99,13 @@ namespace ProsthesisOS.States
         #region Event Receivers
         private void OnConnection(TCP.ConnectionState state)
         {
-            ProsthesisStateBase newState = mCurrentState.OnConnection(this, state);
+            ProsthesisStateBase newState = mCurrentState.OnConnection(state);
             ChangeState(newState);
         }
 
         private void OnDisconnection(TCP.ConnectionState state)
         {
-            ProsthesisStateBase newState = mCurrentState.OnDisconnection(this, state);
+            ProsthesisStateBase newState = mCurrentState.OnDisconnection(state);
             ChangeState(newState);
         }
 
@@ -115,12 +121,12 @@ namespace ProsthesisOS.States
                     ProsthesisHandshakeRequest hsReq = message as ProsthesisHandshakeRequest;
                     if (hsReq.VersionId == ProsthesisCore.ProsthesisConstants.OSVersion)
                     {
-                        newState = mCurrentState.OnClientAuthorization(this, state, true);
+                        newState = mCurrentState.OnClientAuthorization(state, true);
                         mAuthorizedConnection = state;
                     }
                     else
                     {
-                        newState = mCurrentState.OnClientAuthorization(this, state, false);
+                        newState = mCurrentState.OnClientAuthorization(state, false);
                     }
                 }
                 else if (state == mAuthorizedConnection)
@@ -130,11 +136,11 @@ namespace ProsthesisOS.States
                     {
                         ProsthesisCommand command = message as ProsthesisCommand;
                         mLogger.LogMessage(Logger.LoggerChannels.StateMachine, string.Format("Received command {0} from {1}", command.Command, state.RemoteEndPoint));
-                        newState = mCurrentState.OnProsthesisCommand(this, command.Command, state);
+                        newState = mCurrentState.OnProsthesisCommand(command.Command, state);
                     }
                     else
                     {
-                        newState = mCurrentState.OnSocketMessage(this, message, state);
+                        newState = mCurrentState.OnSocketMessage(message, state);
                     }
                 }
                 else

@@ -4,26 +4,29 @@ using System.Linq;
 using System.Text;
 
 using ProsthesisCore.Utility;
+using ProsthesisOS.States.Base;
 
 namespace ProsthesisOS.States
 {
     internal class Initialize : ProsthesisStateBase
     {
-        public override ProsthesisStateBase OnEnter(ProsthesisContext context)
+        public Initialize(IProsthesisContext context) : base(context) { }
+
+        public override ProsthesisStateBase OnEnter()
         {
-            if (context.TCPServer.Start())
+            if (mContext.TCPServer.Start())
             {
-                context.Logger.LogMessage(Logger.LoggerChannels.StateMachine, "TCP Server started");
-                return new States.WaitForConnection();
+                mContext.Logger.LogMessage(Logger.LoggerChannels.StateMachine, "TCP Server started");
+                return new States.WaitForConnection(mContext);
             }
             else
             {
-                context.Logger.LogMessage(Logger.LoggerChannels.StateMachine, "TCP server failed to start");
-                return new States.Shutdown();
+                mContext.Logger.LogMessage(Logger.LoggerChannels.StateMachine, "TCP server failed to start");
+                return new States.Shutdown(mContext);
             }
         }
 
-        public override void OnExit(ProsthesisContext context)
+        public override void OnExit()
         {
 
         }

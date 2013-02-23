@@ -54,11 +54,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="OSMain.cs" />
     <Compile Include="States\AwaitingAuth.cs" />
+    <Compile Include="States\Base\IProsthesisContext.cs" />
     <Compile Include="States\EmergencyShutdown.cs" />
     <Compile Include="States\Initialize.cs" />
-    <Compile Include="States\ProsthesisStateBase.cs" />
+    <Compile Include="States\Base\ProsthesisStateBase.cs" />
     <Compile Include="States\OperationalSuperState.cs" />
-    <Compile Include="States\ProsthesisContext.cs" />
+    <Compile Include="States\ProsthesisMainContext.cs" />
     <Compile Include="States\RunSelfTest.cs" />
     <Compile Include="States\Shutdown.cs" />
     <Compile Include="States\WaitForBootup.cs" />

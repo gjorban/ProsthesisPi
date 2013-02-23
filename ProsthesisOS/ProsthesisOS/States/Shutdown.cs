@@ -3,17 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using ProsthesisOS.States.Base;
+
 namespace ProsthesisOS.States
 {
     internal class Shutdown : ProsthesisStateBase
     {
-        public override ProsthesisStateBase OnEnter(ProsthesisContext context)
+        public Shutdown(IProsthesisContext context) : base(context) { }
+
+        public override ProsthesisStateBase OnEnter()
         {
-            context.Terminate("Shutdown");
+            mContext.Terminate("Shutdown");
             return null;
         }
 
-        public override void OnExit(ProsthesisContext context)
+        public override void OnExit()
         {
 
         }

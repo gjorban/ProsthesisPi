@@ -4,46 +4,48 @@ using System.Linq;
 using System.Text;
 
 using ProsthesisCore.Utility;
+using ProsthesisOS.States.Base;
 
 namespace ProsthesisOS.States
 {
-    internal class OperationalSuperState : ProsthesisStateBase
+    internal class OperationalSuperState : ProsthesisStateBase, IProsthesisContext
     {
+        public ProsthesisStateBase CurrentState { get { return mContext.CurrentState; } }
+        public TCP.TcpServer TCPServer { get { return mContext.TCPServer; } }
+        public TCP.ConnectionState AuthorizedConnection { get { return mContext.AuthorizedConnection; } }
+        public Logger Logger { get { return mContext.Logger; } }
+        public bool IsRunning { get { return mContext.IsRunning; } }
+
         private ProsthesisStateBase mCurrentState = null;
-        private ProsthesisContext mContext = null;
-        private ProsthesisCore.Utility.Logger mLogger = null;
 
-        public OperationalSuperState(Logger logger)
-        {
-            mLogger = logger;
-        }
+        public OperationalSuperState(IProsthesisContext context) : base(context) { }
 
-        public override ProsthesisStateBase OnEnter(ProsthesisContext context)
+        #region ProsthesisStateBase Impl
+        public override ProsthesisStateBase OnEnter()
         {
-            mContext = context;
-            ProsthesisStateBase initialState = new WaitForBootup();
+            ProsthesisStateBase initialState = new WaitForBootup(this);
             ChangeState(initialState);
 
             return this;
         }
 
-        public override void OnExit(ProsthesisContext context)
+        public override void OnExit()
         {
             if (mCurrentState != null)
             {
-                mCurrentState.OnExit(context);
+                mCurrentState.OnExit();
             }
         }
 
-        public override ProsthesisStateBase OnProsthesisCommand(ProsthesisContext context, ProsthesisCore.ProsthesisConstants.ProsthesisCommand command, TCP.ConnectionState from)
+        public override ProsthesisStateBase OnProsthesisCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand command, TCP.ConnectionState from)
         {
             switch (command)
             {
             case ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Shutdown:
-                return new Shutdown();
+                    return new Shutdown(this);
             default:
                 {
-                    ProsthesisStateBase newState =  mCurrentState.OnProsthesisCommand(context, command, from);
+                    ProsthesisStateBase newState =  mCurrentState.OnProsthesisCommand(command, from);
                     if (newState != mCurrentState)
                     {
                         ChangeState(newState);
@@ -55,34 +57,56 @@ namespace ProsthesisOS.States
             return this;
         }
 
-        public override ProsthesisStateBase OnSocketMessage(ProsthesisContext context, ProsthesisCore.Messages.ProsthesisMessage message, TCP.ConnectionState state)
+        public override ProsthesisStateBase OnSocketMessage(ProsthesisCore.Messages.ProsthesisMessage message, TCP.ConnectionState state)
         {
-            ProsthesisStateBase newState = mCurrentState.OnSocketMessage(context, message, state);
+            ProsthesisStateBase newState = mCurrentState.OnSocketMessage(message, state);
             if (newState != mCurrentState)
             {
                 ChangeState(newState);
             }
             return this;
         }
+        #endregion
 
-        private void ChangeState(ProsthesisStateBase to)
+        #region IProsthesisContext Impl
+        public void RaiseFault(string description)
+        {
+            Terminate(description);
+        }
+
+        public void Terminate(string reason)
+        {
+            ChangeState(null);
+            mContext.Terminate(reason);
+        }
+
+        public void ChangeState(ProsthesisStateBase to)
         {
             if (to != mCurrentState)
             {
                 if (mCurrentState != null)
                 {
-                    mCurrentState.OnExit(mContext);
+                    mCurrentState.OnExit();
                 }
                 ProsthesisStateBase oldState = mCurrentState;
-                mCurrentState = to;
-                ProsthesisStateBase chainedState = to.OnEnter(mContext);
+                ProsthesisStateBase chainedState = null;
 
-                mLogger.LogMessage(Logger.LoggerChannels.StateMachine, string.Format("Changing sub-state of {2} state from {0} to {1}",
+                if (to != null)
+                {
+                    chainedState = to.OnEnter();
+                }
+                mCurrentState = to;
+
+                mContext.Logger.LogMessage(Logger.LoggerChannels.StateMachine, string.Format("Changing sub-state of {2} state from {0} to {1}",
                     oldState != null ? oldState.GetType().ToString() : "<none>",
                     to != null ? to.GetType().ToString() : "<none>", GetType()));
 
-                ChangeState(chainedState);
+                if (chainedState != null && chainedState != mCurrentState)
+                {
+                    ChangeState(chainedState);
+                }
             }
         }
+        #endregion
     }
 }

@@ -53,19 +53,57 @@ namespace ProsthesisCore.Messages
     [ProtoContract]
     public class ProsthesisTelemetryContainer : ProsthesisMessage, ICloneable
     {
+        [ProtoContract]
+        public class MotorState : ICloneable
+        {
+            [ProtoMember(1)]
+            public float Voltage;
+            [ProtoMember(2)]
+            public float Current;
+            [ProtoMember(3)]
+            public float DutyCycle;
+
+            public float Power { get { return Voltage * Current; } }
+
+            public MotorState()
+            {
+                Voltage = 0f;
+                Current = 0f;
+                DutyCycle = 0f;
+            }
+
+            public MotorState(MotorState other)
+            {
+                Voltage = other.Voltage;
+                Current = other.Current;
+                DutyCycle = other.DutyCycle;
+            }
+
+            public object Clone()
+            {
+                MotorState newState = new MotorState(this);
+                return newState;
+            }
+
+            public override string ToString()
+            {
+                return string.Format("V:{0} I:{1} P:{2} Duty%: {3:0.00}", Voltage, Current, Power, DutyCycle);
+            }
+        }
+
         public ProsthesisTelemetryContainer() 
         {
             StateName = string.Empty;
             MachineActive = false;
             HydraulicPressure = 0f;
-            if (MotorDutyCycles == null)
+            if (MotorStates == null)
             {
-                MotorDutyCycles = new float[0];
+                MotorStates = new MotorState[0];
             }
 
-            for (int i = 0; i < MotorDutyCycles.Length; ++i)
+            for (int i = 0; i < MotorStates.Length; ++i)
             {
-                MotorDutyCycles[i] = 0f;
+                MotorStates[i] = new MotorState();
             }
 
             if (CellVoltages == null)
@@ -84,7 +122,7 @@ namespace ProsthesisCore.Messages
         public ProsthesisTelemetryContainer(int numMotors, int numCells)
             : base()
         {
-            MotorDutyCycles = new float[numMotors];
+            MotorStates = new MotorState[numMotors];
             CellVoltages = new float[numCells];
         }
 
@@ -94,8 +132,11 @@ namespace ProsthesisCore.Messages
             MachineActive = other.MachineActive;
             HydraulicPressure = other.HydraulicPressure;
 
-            MotorDutyCycles = new float[other.MotorDutyCycles.Length];
-            Array.Copy(other.MotorDutyCycles, MotorDutyCycles, other.MotorDutyCycles.Length);
+            MotorStates = new MotorState[other.MotorStates.Length];
+            for (int i = 0; i < other.MotorStates.Length; ++i)
+            {
+                MotorStates[i] = other.MotorStates[i].Clone() as MotorState;
+            }
 
             CellVoltages = new float[other.CellVoltages.Length];
             Array.Copy(other.CellVoltages, CellVoltages, other.CellVoltages.Length);
@@ -111,7 +152,7 @@ namespace ProsthesisCore.Messages
         [ProtoMember(3)]
         public float HydraulicPressure;
         [ProtoMember(4)]
-        public float[] MotorDutyCycles;
+        public MotorState[] MotorStates;
         [ProtoMember(5)]
         public float[] CellVoltages;
         [ProtoMember(6)]
@@ -122,12 +163,12 @@ namespace ProsthesisCore.Messages
             string motorStrings = string.Empty;
             string cellVoltageString = string.Empty;
 
-            if (MotorDutyCycles != null)
+            if (MotorStates != null)
             {
-                for (int i = 0; i < MotorDutyCycles.Length; ++i)
+                for (int i = 0; i < MotorStates.Length; ++i)
                 {
-                    motorStrings += string.Format("Motor {0} duty cycle: {1:0.00}%", i, MotorDutyCycles[i]);
-                    if (i < MotorDutyCycles.Length - 1)
+                    motorStrings += string.Format("Motor {0} state: {1}", i, MotorStates[i]);
+                    if (i < MotorStates.Length - 1)
                     {
                         motorStrings += "\n";
                     }

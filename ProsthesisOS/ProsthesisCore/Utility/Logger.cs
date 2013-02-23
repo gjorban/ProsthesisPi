@@ -7,15 +7,16 @@ namespace ProsthesisCore.Utility
 {
     public sealed class Logger
     {
+        [System.Flags]
         public enum LoggerChannels
         {
-            General,
-            System,
-            Network,
-            StateMachine,
-            Events,
-            Faults,
-            Telemetry
+            General = 1,
+            System = 2,
+            Network = 4,
+            StateMachine = 8,
+            Events = 16,
+            Faults = 32,
+            Telemetry = 64
         }
 
         private bool mPrintToConsole = false;
@@ -26,6 +27,8 @@ namespace ProsthesisCore.Utility
         private System.IO.StreamWriter mWriter = null;
 
         private Queue<string> mQueuedMessagesForOutput = new Queue<string>();
+
+        private LoggerChannels mActiveChannels = (LoggerChannels)~0;
 
         public Logger(string fileOutput, bool printToConsole)
         {
@@ -66,6 +69,16 @@ namespace ProsthesisCore.Utility
             }
         }
 
+        public void ActivateChannels(LoggerChannels channels)
+        {
+            mActiveChannels |= channels;
+        }
+
+        public void DeactivateChannels(LoggerChannels channels)
+        {
+            mActiveChannels &= ~channels;
+        }
+
         public void LogMessage(string msg)
         {
             LogMessage(LoggerChannels.General, msg);
@@ -78,6 +91,11 @@ namespace ProsthesisCore.Utility
 
         public void LogMessage(LoggerChannels channel, string msg, bool prefixTimestamp)
         {
+            if ((channel & mActiveChannels) != channel)
+            {
+                return;
+            }
+
             string timeStamp = string.Empty;
             if (prefixTimestamp)
             {

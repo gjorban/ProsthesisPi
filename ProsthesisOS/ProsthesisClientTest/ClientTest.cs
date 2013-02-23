@@ -14,6 +14,8 @@ namespace ProsthesisClientTest
     sealed class ClientTest
     {
         private static Logger mLogger = null;
+        private static Logger mTelemetryLogger = null;
+
         private static ProsthesisCore.ProsthesisPacketParser mPacketParser = new ProsthesisCore.ProsthesisPacketParser();
         private static ProsthesisClient.ProsthesisTelemetryReceiver mTelemReceiver = null;
 
@@ -22,13 +24,20 @@ namespace ProsthesisClientTest
 
         static void Main(string[] args)
         {
-            string fileName = string.Format("ClientTest-{0}.txt", System.DateTime.Now.ToString("dd MMM yyyy HH-mm-ss"));
-            mLogger = new Logger(fileName, true);
+            string timestamp = System.DateTime.Now.ToString("dd MMM yyyy HH-mm-ss");
+            string fileName = string.Format("ClientTest-{0}.txt", timestamp);
+            string telemetryFileName = string.Format("ClientTest-Telemetry-{0}.txt", timestamp);
 
-            mTelemReceiver = new ProsthesisClient.ProsthesisTelemetryReceiver(mLogger);
+            mLogger = new Logger(fileName, true);
+            //No no telemetry in main output
+            mLogger.DeactivateChannels(Logger.LoggerChannels.Telemetry);
+
+            //Start telemetry logging
+            mTelemetryLogger = new Logger(telemetryFileName, false);
+            mTelemReceiver = new ProsthesisClient.ProsthesisTelemetryReceiver(mTelemetryLogger);
             mTelemReceiver.Received += OnTelemetryReceive;
 
-            mClient = new ProsthesisSocketClient(OnDataPacketReceive, "192.168.0.18", ProsthesisCore.ProsthesisConstants.ConnectionPort, mLogger);
+            mClient = new ProsthesisSocketClient(OnDataPacketReceive, "127.0.0.1", ProsthesisCore.ProsthesisConstants.ConnectionPort, mLogger);
             mClient.ConnectFinished += new Action<ProsthesisSocketClient, bool>(OnConnectFinished);
             mClient.ConnectionClosed += new Action<ProsthesisSocketClient>(OnConnectionClosed);
 
@@ -54,6 +63,7 @@ namespace ProsthesisClientTest
                     mTelemReceiver.Stop();
                 }
 
+                mTelemetryLogger.ShutDown();
                 mLogger.ShutDown();
             };
 
@@ -139,6 +149,7 @@ namespace ProsthesisClientTest
             }
 
             mTelemReceiver.Stop();
+            mTelemetryLogger.ShutDown();
             mLogger.ShutDown();
         }
 
@@ -164,7 +175,7 @@ namespace ProsthesisClientTest
 
         private static void OnTelemetryReceive(ProsthesisCore.Messages.ProsthesisTelemetryContainer msg)
         {
-            mLogger.LogMessage(Logger.LoggerChannels.Telemetry, msg.ToString());
+            mTelemetryLogger.LogMessage(Logger.LoggerChannels.Telemetry, msg.ToString());
         }
 
         private static void OnConnectionClosed(ProsthesisSocketClient obj)

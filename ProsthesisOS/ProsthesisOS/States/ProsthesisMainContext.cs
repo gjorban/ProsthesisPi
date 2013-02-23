@@ -136,6 +136,15 @@ namespace ProsthesisOS.States
                     {
                         ProsthesisCommand command = message as ProsthesisCommand;
                         mLogger.LogMessage(Logger.LoggerChannels.Events, string.Format("Received command {0} from {1}", command.Command, state.RemoteEndPoint));
+
+
+                        ProsthesisCommandAck ack = new ProsthesisCommandAck();
+                        ack.Command = command.Command;
+                        ack.Timestamp = System.DateTime.Now.Ticks;
+                        ProsthesisDataPacket pack = ProsthesisDataPacket.BoxMessage<ProsthesisCommandAck>(ack);
+
+                        state._conn.Send(pack.Bytes, pack.Bytes.Length, System.Net.Sockets.SocketFlags.None);
+
                         if (command.Command == ProsthesisConstants.ProsthesisCommand.EmergencyStop)
                         {
                             Terminate(string.Format("Emergency stop from {0}", state.RemoteEndPoint));

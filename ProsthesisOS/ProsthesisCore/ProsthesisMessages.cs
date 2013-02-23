@@ -7,6 +7,7 @@ namespace ProsthesisCore.Messages
     [ProtoInclude(1,typeof(ProsthesisHandshakeRequest))]
     [ProtoInclude(2, typeof(ProsthesisHandshakeResponse))]
     [ProtoInclude(3, typeof(ProsthesisCommand))]
+    [ProtoInclude(4, typeof(ProsthesisCommandAck))]
     [ProtoContract]
     public abstract class ProsthesisMessage { }
 
@@ -35,6 +36,15 @@ namespace ProsthesisCore.Messages
     {
         [ProtoMember(1)]
         public ProsthesisConstants.ProsthesisCommand Command;
+    }
+
+    [ProtoContract]
+    public class ProsthesisCommandAck : ProsthesisMessage
+    {
+        [ProtoMember(1)]
+        public ProsthesisConstants.ProsthesisCommand Command;
+        [ProtoMember(2)]
+        public long Timestamp;
     }
 
     [ProtoContract]

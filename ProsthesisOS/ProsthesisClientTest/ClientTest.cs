@@ -82,6 +82,11 @@ namespace ProsthesisClientTest
                                 ProsthesisHandshakeResponse castMess = mess as ProsthesisHandshakeResponse;
                                 mLogger.LogMessage(Logger.LoggerChannels.Events, string.Format("Got handshake response. Authed? {0}", castMess.AuthorizedConnection ? "yes" : "no"));
                             }
+                            else if (mess is ProsthesisCommandAck)
+                            {
+                                ProsthesisCommandAck ack = mess as ProsthesisCommandAck;
+                                mLogger.LogMessage(Logger.LoggerChannels.Events, string.Format("Got command acknowledgement for cmd {0}", ack.Command));
+                            }
                             else if (mess == null)
                             {
                                 mLogger.LogMessage(Logger.LoggerChannels.Events, string.Format("Got a null message from packet parser"));

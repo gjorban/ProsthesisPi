@@ -135,8 +135,15 @@ namespace ProsthesisOS.States
                     if (message is ProsthesisCommand)
                     {
                         ProsthesisCommand command = message as ProsthesisCommand;
-                        mLogger.LogMessage(Logger.LoggerChannels.StateMachine, string.Format("Received command {0} from {1}", command.Command, state.RemoteEndPoint));
-                        newState = mCurrentState.OnProsthesisCommand(command.Command, state);
+                        mLogger.LogMessage(Logger.LoggerChannels.Events, string.Format("Received command {0} from {1}", command.Command, state.RemoteEndPoint));
+                        if (command.Command == ProsthesisConstants.ProsthesisCommand.EmergencyStop)
+                        {
+                            Terminate(string.Format("Emergency stop from {0}", state.RemoteEndPoint));
+                        }
+                        else
+                        {
+                            newState = mCurrentState.OnProsthesisCommand(command.Command, state);
+                        }
                     }
                     else
                     {

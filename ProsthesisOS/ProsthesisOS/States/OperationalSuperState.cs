@@ -42,7 +42,8 @@ namespace ProsthesisOS.States
             switch (command)
             {
             case ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Shutdown:
-                    return new Shutdown(this);
+                return new Shutdown(this);
+
             default:
                 {
                     ProsthesisStateBase newState =  mCurrentState.OnProsthesisCommand(command, from);
@@ -76,6 +77,7 @@ namespace ProsthesisOS.States
 
         public void Terminate(string reason)
         {
+            //Exit our current state first
             ChangeState(null);
             mContext.Terminate(reason);
         }

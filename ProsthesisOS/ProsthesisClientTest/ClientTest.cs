@@ -17,6 +17,7 @@ namespace ProsthesisClientTest
         private static ProsthesisCore.ProsthesisPacketParser mPacketParser = new ProsthesisCore.ProsthesisPacketParser();
 
         private static ManualResetEvent mWaitForConnect = new ManualResetEvent(false);
+        private static ProsthesisSocketClient mClient = null;
 
         private static void OnDataPacketReceive(ProsthesisSocketClient source, byte[] data, int len)
         {
@@ -27,18 +28,18 @@ namespace ProsthesisClientTest
         {
             string fileName = string.Format("ClientTest-{0}.txt", System.DateTime.Now.ToString("dd MMM yyyy HH-mm-ss"));
             mLogger = new Logger(fileName, true);
-            ProsthesisSocketClient client = new ProsthesisSocketClient(OnDataPacketReceive, "127.0.0.1", ProsthesisCore.ProsthesisConstants.ConnectionPort, mLogger);
-            client.ConnectFinished += new Action<ProsthesisSocketClient, bool>(OnConnectFinished);
-            client.ConnectionClosed += new Action<ProsthesisSocketClient>(OnConnectionClosed);
+            mClient = new ProsthesisSocketClient(OnDataPacketReceive, "127.0.0.1", ProsthesisCore.ProsthesisConstants.ConnectionPort, mLogger);
+            mClient.ConnectFinished += new Action<ProsthesisSocketClient, bool>(OnConnectFinished);
+            mClient.ConnectionClosed += new Action<ProsthesisSocketClient>(OnConnectionClosed);
 
             //Safely shut down app
             AppDomain.CurrentDomain.ProcessExit += delegate(object sender, EventArgs e)
             {
                 try
                 {
-                    if (client != null && client.Connected)
+                    if (mClient != null && mClient.Connected)
                     {
-                        client.Shutdown();
+                        mClient.Shutdown();
                     }
                 }
                 catch (Exception ex)
@@ -51,7 +52,7 @@ namespace ProsthesisClientTest
 
             try
             {
-                client.StartConnect();
+                mClient.StartConnect();
             }
             catch (SocketException ex)
             {
@@ -65,10 +66,10 @@ namespace ProsthesisClientTest
                 ProsthesisCore.Messages.ProsthesisHandshakeRequest req = new ProsthesisCore.Messages.ProsthesisHandshakeRequest();
                 req.VersionId = ProsthesisCore.ProsthesisConstants.OSVersion;
 
-                if (client.Connected)
+                if (mClient.Connected)
                 {
                     ProsthesisDataPacket packet = ProsthesisDataPacket.BoxMessage<ProsthesisHandshakeRequest>(req);
-                    client.Send(packet.Bytes, 0, packet.Bytes.Length);
+                    mClient.Send(packet.Bytes, 0, packet.Bytes.Length);
 
                     ConsoleKey key = ConsoleKey.A;
                     do
@@ -97,24 +98,57 @@ namespace ProsthesisClientTest
                         if (Console.KeyAvailable)
                         {
                             key = Console.ReadKey().Key;
+
+                            switch (key)
+                            {
+                            case ConsoleKey.I:
+                                SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Initialize);
+                                break;
+                            case ConsoleKey.S:
+                                SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Shutdown);
+                                break;
+                            case ConsoleKey.R:
+                                SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Resume);
+                                break;
+                            case ConsoleKey.P:
+                                SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Pause);
+                                break;
+                            case ConsoleKey.E:
+                                SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.EmergencyStop);
+                                break;
+                            }
                         }
 
-                    } while (key != ConsoleKey.X && client.Connected);
-                    client.Shutdown();
+                    } while (key != ConsoleKey.X && mClient.Connected);
+                    mClient.Shutdown();
                 }
 
-                client = null;
+                mClient = null;
             }
 
             mLogger.ShutDown();
         }
 
-        static void OnConnectionClosed(ProsthesisSocketClient obj)
+        private static void SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand command)
+        {
+            if (mClient != null && mClient.Connected)
+            {
+                ProsthesisCommand cmd = new ProsthesisCommand();
+                cmd.Command = command;
+
+                mLogger.LogMessage(Logger.LoggerChannels.Events, string.Format("Sending command {0}", command));
+
+                ProsthesisDataPacket packet = ProsthesisDataPacket.BoxMessage<ProsthesisCommand>(cmd);
+                mClient.Send(packet.Bytes, 0, packet.Bytes.Length);
+            }
+        }
+
+        private static void OnConnectionClosed(ProsthesisSocketClient obj)
         {
 
         }
 
-        static void OnConnectFinished(ProsthesisSocketClient arg1, bool arg2)
+        private static void OnConnectFinished(ProsthesisSocketClient arg1, bool arg2)
         {
             mWaitForConnect.Set();
         }

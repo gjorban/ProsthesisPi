@@ -7,30 +7,25 @@ using ProsthesisOS.States.Base;
 
 namespace ProsthesisOS.States
 {
-    internal class WaitForBootup : ProsthesisStateBase
+    internal class ProsthesisIdle : ProsthesisStateBase
     {
-        public WaitForBootup(IProsthesisContext context) : base(context) { }
+        public ProsthesisIdle(IProsthesisContext context) : base(context){}
 
         public override ProsthesisStateBase OnEnter()
         {
             return this;
         }
 
-        public override void OnExit()
-        {
-        }
+        public override void OnExit() { }
 
         public override ProsthesisStateBase OnProsthesisCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand command, TCP.ConnectionState from)
         {
             switch (command)
             {
-            case ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Initialize:
-                return new RunSelfTest(mContext);
-
-            case ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Shutdown:
-                return new Shutdown(mContext);
+            case ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Resume:
+                return new ProsthesisActive(mContext);
             }
-            return this;
+            return base.OnProsthesisCommand(command, from);
         }
     }
 }

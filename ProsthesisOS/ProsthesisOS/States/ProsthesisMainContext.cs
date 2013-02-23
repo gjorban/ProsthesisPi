@@ -18,6 +18,7 @@ namespace ProsthesisOS.States
         public TCP.ConnectionState AuthorizedConnection { get { return mAuthorizedConnection; } }
         public Logger Logger { get { return mLogger; } }
         public bool IsRunning { get { return mRunning; } }
+        public ProsthesisTelemetryContainer MachineState { get { return mTelemetryObject.Clone() as ProsthesisTelemetryContainer; } }
 
         public event ProsthesisStateChangeDelegate StateChanged = null;
 
@@ -29,6 +30,8 @@ namespace ProsthesisOS.States
 
         private TCP.ConnectionState mAuthorizedConnection = null;
         private System.Threading.ManualResetEvent mMachineActiveWait = new System.Threading.ManualResetEvent(false);
+
+        private ProsthesisTelemetryContainer mTelemetryObject = new ProsthesisTelemetryContainer();
 
         public ProsthesisMainContext(int tcpPort, Logger logger)
         {

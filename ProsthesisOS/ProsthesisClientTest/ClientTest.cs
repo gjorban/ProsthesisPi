@@ -15,22 +15,24 @@ namespace ProsthesisClientTest
     {
         private static Logger mLogger = null;
         private static ProsthesisCore.ProsthesisPacketParser mPacketParser = new ProsthesisCore.ProsthesisPacketParser();
+        private static ProsthesisClient.ProsthesisTelemetryReceiver mTelemReceiver = null;
 
         private static ManualResetEvent mWaitForConnect = new ManualResetEvent(false);
         private static ProsthesisSocketClient mClient = null;
-
-        private static void OnDataPacketReceive(ProsthesisSocketClient source, byte[] data, int len)
-        {
-            mPacketParser.AddData(data, len);
-        }
 
         static void Main(string[] args)
         {
             string fileName = string.Format("ClientTest-{0}.txt", System.DateTime.Now.ToString("dd MMM yyyy HH-mm-ss"));
             mLogger = new Logger(fileName, true);
-            mClient = new ProsthesisSocketClient(OnDataPacketReceive, "127.0.0.1", ProsthesisCore.ProsthesisConstants.ConnectionPort, mLogger);
+
+            mTelemReceiver = new ProsthesisClient.ProsthesisTelemetryReceiver(mLogger);
+            mTelemReceiver.Received += OnTelemetryReceive;
+
+            mClient = new ProsthesisSocketClient(OnDataPacketReceive, "192.168.0.18", ProsthesisCore.ProsthesisConstants.ConnectionPort, mLogger);
             mClient.ConnectFinished += new Action<ProsthesisSocketClient, bool>(OnConnectFinished);
             mClient.ConnectionClosed += new Action<ProsthesisSocketClient>(OnConnectionClosed);
+
+            mTelemReceiver.Start();
 
             //Safely shut down app
             AppDomain.CurrentDomain.ProcessExit += delegate(object sender, EventArgs e)
@@ -45,6 +47,11 @@ namespace ProsthesisClientTest
                 catch (Exception ex)
                 {
                     mLogger.LogMessage(Logger.LoggerChannels.Faults, string.Format("Exception shutting down socket client: {0}", ex));
+                }
+
+                if (mTelemReceiver != null)
+                {
+                    mTelemReceiver.Stop();
                 }
 
                 mLogger.ShutDown();
@@ -131,6 +138,7 @@ namespace ProsthesisClientTest
                 mClient = null;
             }
 
+            mTelemReceiver.Stop();
             mLogger.ShutDown();
         }
 
@@ -148,6 +156,17 @@ namespace ProsthesisClientTest
             }
         }
 
+        #region Event Receivers
+        private static void OnDataPacketReceive(ProsthesisSocketClient source, byte[] data, int len)
+        {
+            mPacketParser.AddData(data, len);
+        }
+
+        private static void OnTelemetryReceive(ProsthesisCore.Messages.ProsthesisTelemetryContainer msg)
+        {
+            mLogger.LogMessage(Logger.LoggerChannels.Telemetry, msg.ToString());
+        }
+
         private static void OnConnectionClosed(ProsthesisSocketClient obj)
         {
 
@@ -157,5 +176,6 @@ namespace ProsthesisClientTest
         {
             mWaitForConnect.Set();
         }
+        #endregion
     }
 }

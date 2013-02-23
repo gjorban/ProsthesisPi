@@ -14,7 +14,8 @@ namespace ProsthesisCore.Utility
             Network,
             StateMachine,
             Events,
-            Faults
+            Faults,
+            Telemetry
         }
 
         private bool mPrintToConsole = false;

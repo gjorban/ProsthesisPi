@@ -16,7 +16,8 @@ namespace ProsthesisCore.Utility
             StateMachine = 8,
             Events = 16,
             Faults = 32,
-            Telemetry = 64
+            Telemetry = 64,
+            Arduino = 128
         }
 
         private bool mPrintToConsole = false;

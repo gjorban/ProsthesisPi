@@ -17,7 +17,7 @@ namespace ProsthesisOS.States
             if (mContext.TCPServer.Start())
             {
                 mContext.Logger.LogMessage(Logger.LoggerChannels.StateMachine, "TCP Server started");
-                return new States.WaitForConnection(mContext);
+                return new States.OperationalSuperState(mContext);
             }
             else
             {

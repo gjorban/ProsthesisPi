@@ -41,22 +41,6 @@ namespace ProsthesisOS.States
             mSocketServer.Disconnection += OnDisconnection;
             mSocketServer.MessageAvailable += OnSocketMessageAvailable;
 
-            //TODO: discover this based on data from the Arduinos
-         /*   mTelemetryObject.CellVoltages = new float[12];
-            for (int i = 0; i < mTelemetryObject.CellVoltages.Length; ++i)
-            {
-                mTelemetryObject.CellVoltages[i] = 0f;
-            }
-
-            mTelemetryObject.MotorStates = new ProsthesisTelemetryContainer.MotorState[2];
-            for (int i = 0; i < mTelemetryObject.MotorStates.Length; ++i)
-            {
-                mTelemetryObject.MotorStates[i] = new ProsthesisTelemetryContainer.MotorState();
-                mTelemetryObject.MotorStates[i].Current = 0f;
-                mTelemetryObject.MotorStates[i].Voltage = 0f;
-                mTelemetryObject.MotorStates[i].DutyCycle = 0f;
-            }*/
-
             mLogger = logger;
             mLogger.LogMessage(Logger.LoggerChannels.StateMachine, "State machine initializing");
             mMachineActiveWait.Reset();
@@ -113,6 +97,11 @@ namespace ProsthesisOS.States
                     ChangeState(chainedState);
                 }
             }
+        }
+
+        public void UpdateMotorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProthesisMotorTelemetry motorTelem)
+        {
+            mTelemetryObject.MotorTelem = new ProsthesisCore.Telemetry.ProsthesisTelemetry.ProthesisMotorTelemetry(motorTelem);
         }
 
         #region Event Receivers

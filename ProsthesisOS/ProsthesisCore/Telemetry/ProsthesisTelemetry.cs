@@ -15,6 +15,7 @@ namespace ProsthesisCore.Telemetry
         /// </summary>
         public enum DeviceState
         {
+            Disconnected = -2,
             Uninitialized = -1,
             Disabled = 0,
             Active = 1,
@@ -77,13 +78,14 @@ namespace ProsthesisCore.Telemetry
                 Fl = new float[0];
                 Load = false;
                 Dt = new float[0];
-                Ds = DeviceState.Uninitialized;
+                Ds = DeviceState.Disconnected;
             }
 
             public ProthesisMotorTelemetry(ProthesisMotorTelemetry other)
             {
                 if (other.C != null)
                 {
+                    C = new float[other.C.Length];
                     Array.Copy(other.C, C, other.C.Length);
                 }
                 else
@@ -93,6 +95,7 @@ namespace ProsthesisCore.Telemetry
 
                 if (other.V != null)
                 {
+                    V = new int[other.V.Length];
                     Array.Copy(other.V, V, other.V.Length);
                 }
                 else
@@ -102,6 +105,7 @@ namespace ProsthesisCore.Telemetry
 
                 if (other.Pout != null)
                 {
+                    Pout = new float[other.Pout.Length];
                     Array.Copy(other.Pout, Pout, other.Pout.Length);
                 }
                 else
@@ -111,6 +115,7 @@ namespace ProsthesisCore.Telemetry
 
                 if (other.Pload != null)
                 {
+                    Pload = new float[other.Pload.Length];
                     Array.Copy(other.Pload, Pload, other.Pload.Length);
                 }
                 else
@@ -122,6 +127,7 @@ namespace ProsthesisCore.Telemetry
 
                 if (other.Dt != null)
                 {
+                    Dt = new float[other.Dt.Length];
                     Array.Copy(other.Dt, Dt, other.Dt.Length);
                 }
                 else
@@ -165,10 +171,15 @@ namespace ProsthesisCore.Telemetry
         public sealed class ProsthesisBMSTelemetry : ICloneable
         {
             //Contents TBD
+            [ProtoMember(1)]
+            public DeviceState Ds;
 
             public ProsthesisBMSTelemetry() { }
 
-            public ProsthesisBMSTelemetry(ProsthesisBMSTelemetry other) { }
+            public ProsthesisBMSTelemetry(ProsthesisBMSTelemetry other) 
+            {
+                Ds = other.Ds;
+            }
 
             public object Clone()
             {

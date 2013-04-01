@@ -18,12 +18,20 @@ namespace ProsthesisOS.States
 
         private ProsthesisStateBase mCurrentState = null;
 
-        public OperationalSuperState(IProsthesisContext context) : base(context) { }
+        private ArduinoCommunicationsLibrary.MotorControllerArduino mMotorControllerArduino = null;
+        private bool mRunning = false;
+
+        public OperationalSuperState(IProsthesisContext context) : base(context) 
+        {
+            mMotorControllerArduino = new ArduinoCommunicationsLibrary.MotorControllerArduino(context.Logger);
+            mMotorControllerArduino.TelemetryUpdate += UpdateMotorTelemetry;
+        }
 
         #region ProsthesisStateBase Impl
         public override ProsthesisStateBase OnEnter()
         {
-            ProsthesisStateBase initialState = new WaitForBootup(this);
+            mRunning = true;
+            ProsthesisStateBase initialState = new WaitForBootup(this, new ArduinoCommunicationsLibrary.ArduinoCommsBase[] { mMotorControllerArduino });
             ChangeState(initialState);
 
             return this;
@@ -34,6 +42,18 @@ namespace ProsthesisOS.States
             if (mCurrentState != null)
             {
                 mCurrentState.OnExit();
+            }
+
+            if (mMotorControllerArduino != null)
+            {
+                if (mMotorControllerArduino.TelemetryActive)
+                {
+                    mMotorControllerArduino.TelemetryToggle(0);
+                }
+
+                mMotorControllerArduino.StopArduinoComms(true);
+                mMotorControllerArduino.TelemetryUpdate -= UpdateMotorTelemetry;
+                mMotorControllerArduino = null;
             }
         }
 
@@ -79,11 +99,17 @@ namespace ProsthesisOS.States
         {
             //Exit our current state first
             ChangeState(null);
+            mRunning = false;
             mContext.Terminate(reason);
         }
 
         public void ChangeState(ProsthesisStateBase to)
         {
+            if (!mRunning)
+            {
+                return;
+            }
+
             if (to != mCurrentState)
             {
                 if (mCurrentState != null)
@@ -107,6 +133,21 @@ namespace ProsthesisOS.States
                 {
                     ChangeState(chainedState);
                 }
+            }
+        }
+
+        public void UpdateMotorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProthesisMotorTelemetry motorTelem)
+        {
+            mContext.UpdateMotorTelemetry(motorTelem);
+        }
+        #endregion
+
+        #region Arduino Event Receivers
+        private void OnArduinoStateChange(ArduinoCommunicationsLibrary.ArduinoCommsBase arduino, ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState from, ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState to)
+        {
+            if (to == ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Fault)
+            {
+                RaiseFault(string.Format("AID {0} reported a fault.", arduino.ArduinoID));
             }
         }
         #endregion

@@ -73,6 +73,10 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Arduino Communications Library\Arduino Communications Library.csproj">
+      <Project>{601143B3-7999-44BB-9BB6-ABFA7F970517}</Project>
+      <Name>Arduino Communications Library</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ProsthesisCore\ProsthesisCore.csproj">
       <Project>{25C3E224-9C88-495E-AB0A-4CF5D411F70F}</Project>
       <Name>ProsthesisCore</Name>

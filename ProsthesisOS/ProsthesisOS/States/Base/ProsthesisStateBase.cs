@@ -25,7 +25,7 @@ namespace ProsthesisOS.States.Base
         {
             if (state == mContext.AuthorizedConnection)
             {
-                return new Shutdown(mContext);
+                //return new Shutdown(mContext);
             }
             return this;
         }

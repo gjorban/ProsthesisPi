@@ -22,7 +22,7 @@ namespace ProsthesisOS.States
             
         }
 
-        public override ProsthesisStateBase OnClientAuthorization(TCP.ConnectionState authedClient, bool isAuthorized)
+      /*  public override ProsthesisStateBase OnClientAuthorization(TCP.ConnectionState authedClient, bool isAuthorized)
         {
             ProsthesisHandshakeResponse response = new ProsthesisHandshakeResponse();
             response.AuthorizedConnection = isAuthorized;
@@ -40,6 +40,6 @@ namespace ProsthesisOS.States
                 //authedClient._server.DropConnection(authedClient);
                 return this;
             }
-        }
+        }*/
     }
 }

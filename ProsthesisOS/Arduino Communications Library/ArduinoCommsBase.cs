@@ -11,7 +11,7 @@ namespace ArduinoCommunicationsLibrary
 {
     public abstract class ArduinoCommsBase
     {
-        public event Action<ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState, ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState> StateChanged = null;
+        public event Action<ArduinoCommsBase, ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState, ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState> StateChanged = null;
 
         protected ProsthesisCore.Utility.Logger mLogger = null;
 
@@ -22,6 +22,8 @@ namespace ArduinoCommunicationsLibrary
         protected string mPortName = string.Empty;
 
         protected bool mTelemetryToggled = false;
+        public bool TelemetryActive { get { return mTelemetryToggled; } }
+
         protected ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState mDeviceState = ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Uninitialized;
 
         protected const int kIDTimeoutMilliseconds = 1000;
@@ -50,9 +52,17 @@ namespace ArduinoCommunicationsLibrary
                 {
                     serialPort.BaudRate = kArduinoCommsBaudRate;
                     serialPort.Open();
+
+                    //Disable telemtry just incase
+                    var toggle = new { ID = ArduinoMessageValues.kTelemetryEnableValue, EN = false };
+                    string disableTelem = Newtonsoft.Json.JsonConvert.SerializeObject(toggle);
+                    serialPort.Write(disableTelem);
+
+                    //Discard any built up data
                     serialPort.DiscardInBuffer(); 
                     serialPort.Write(jsonOutput);
                     serialPort.ReadTimeout = kIDTimeoutMilliseconds;
+
                     string response = string.Empty;
                     try
                     {
@@ -70,7 +80,7 @@ namespace ArduinoCommunicationsLibrary
                     {
                         try
                         {
-                            ArduinoIDAckMessage msg = Newtonsoft.Json.JsonConvert.DeserializeObject < ArduinoIDAckMessage>(response);
+                            ArduinoIDAckMessage msg = Newtonsoft.Json.JsonConvert.DeserializeObject<ArduinoIDAckMessage>(response);
                             if (msg.ID == ArduinoMessageValues.kAcknowledgeID && msg.AID == mArduinoID)
                             {
                                 mTelemetryToggled = msg.TS;
@@ -89,6 +99,10 @@ namespace ArduinoCommunicationsLibrary
                             }
                         }
                         //Catch malformed JSON response, if there is one at all
+                        catch (Newtonsoft.Json.JsonSerializationException)
+                        {
+                            mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Malformed response. Ignoring port {0}", port));
+                        }
                         catch (Newtonsoft.Json.JsonReaderException)
                         {
                             mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Malformed response. Ignoring port {0}", port));
@@ -174,7 +188,7 @@ namespace ArduinoCommunicationsLibrary
                 mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", changed));
                 if (StateChanged != null)
                 {
-                    StateChanged(changed.FR, changed.TO);
+                    StateChanged(this, changed.FR, changed.TO);
                 }
                 mDeviceState = changed.TO;
                 break;

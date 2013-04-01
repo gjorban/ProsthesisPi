@@ -9,10 +9,34 @@ namespace ProsthesisOS.States
 {
     internal class WaitForBootup : ProsthesisStateBase
     {
-        public WaitForBootup(IProsthesisContext context) : base(context) { }
+        private ArduinoCommunicationsLibrary.ArduinoCommsBase[] mArduinos = null;
+
+        public WaitForBootup(IProsthesisContext context, ArduinoCommunicationsLibrary.ArduinoCommsBase[] arduinos) : base(context) 
+        {
+            mArduinos = arduinos;
+        }
 
         public override ProsthesisStateBase OnEnter()
         {
+            if (mArduinos != null)
+            {
+                foreach (ArduinoCommunicationsLibrary.ArduinoCommsBase arduino in mArduinos)
+                {
+                    if (!arduino.StartArduinoComms())
+                    {
+                        mContext.RaiseFault(string.Format("Unable to open serial communications with AID {0}", arduino.ArduinoID));
+                        return null;
+                    }
+                    else
+                    {
+                        arduino.ToggleArduinoState(false);
+                        if (!arduino.TelemetryActive)
+                        {
+                            arduino.TelemetryToggle(100);
+                        }
+                    }
+                }
+            }
             return this;
         }
 

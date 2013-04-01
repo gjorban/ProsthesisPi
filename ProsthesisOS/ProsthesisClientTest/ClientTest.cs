@@ -123,26 +123,39 @@ namespace ProsthesisClientTest
 
                             switch (key)
                             {
-                            case ConsoleKey.I:
-                                SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Initialize);
-                                break;
-                            case ConsoleKey.S:
-                                SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Shutdown);
-                                break;
-                            case ConsoleKey.R:
-                                SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Resume);
-                                break;
-                            case ConsoleKey.P:
-                                SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Pause);
-                                break;
-                            case ConsoleKey.E:
-                                SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.EmergencyStop);
-                                break;
+                                case ConsoleKey.I:
+                                    SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Initialize);
+                                    break;
+                                case ConsoleKey.S:
+                                    SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Shutdown);
+                                    break;
+                                case ConsoleKey.R:
+                                    SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Resume);
+                                    break;
+                                case ConsoleKey.P:
+                                    SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Pause);
+                                    break;
+                                case ConsoleKey.E:
+                                    SendCommand(ProsthesisCore.ProsthesisConstants.ProsthesisCommand.EmergencyStop);
+                                    break;
                             }
                         }
 
                     } while (key != ConsoleKey.X && mClient.Connected);
                     mClient.Shutdown();
+                }
+                else
+                {
+                    ConsoleKey key = ConsoleKey.K;
+                    do
+                    {
+                        System.Threading.Thread.Sleep(16);
+                        if (Console.KeyAvailable)
+                        {
+                            key = Console.ReadKey().Key;
+                        }
+                    }
+                    while (key != ConsoleKey.X);
                 }
 
                 mClient = null;

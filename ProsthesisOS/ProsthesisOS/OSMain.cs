@@ -25,7 +25,7 @@ namespace ProsthesisOS
         {
             mTelemetryBroadcastTimer = new Timer(kTelemetryBroadcastPeriod);
             mTelemetryBroadcastTimer.AutoReset = true;
-            mTelemetryBroadcastTimer.Elapsed += OnTelemetryTimerAlarm;
+            mTelemetryBroadcastTimer.Elapsed += OnTelemetryPublishAlarm;
 
             string fileName = string.Format("Server-{0}.txt", System.DateTime.Now.ToString("dd MM yyyy HH-mm-ss"));
             mLogger = new ProsthesisCore.Utility.Logger(fileName, true);
@@ -54,18 +54,25 @@ namespace ProsthesisOS
             mLogger.ShutDown();
         }
 
-        private static void OnTelemetryTimerAlarm(object sender, ElapsedEventArgs arg)
+        private static void OnTelemetryPublishAlarm(object sender, ElapsedEventArgs arg)
         {
             using (var udpClient = new UdpClient(AddressFamily.InterNetwork))
             {
                 ProsthesisCore.Telemetry.ProsthesisTelemetry telem = mContext.MachineState;
                 ProsthesisDataPacket packet = ProsthesisCore.Messages.ProsthesisDataPacket.BoxMessage<ProsthesisCore.Telemetry.ProsthesisTelemetry>(telem);
 
-                var address = IPAddress.Parse(ProsthesisCore.ProsthesisConstants.kMulticastGroupAddress);
-                var ipEndPoint = new IPEndPoint(address, ProsthesisCore.ProsthesisConstants.kTelemetryPort);
-                udpClient.JoinMulticastGroup(address, 50);
-                udpClient.Send(packet.Bytes, packet.Bytes.Length, ipEndPoint);
-                udpClient.Close();
+                if (packet != null)
+                {
+                    IPAddress address = IPAddress.Parse(ProsthesisCore.ProsthesisConstants.kMulticastGroupAddress);
+                    IPEndPoint ipEndPoint = new IPEndPoint(address, ProsthesisCore.ProsthesisConstants.kTelemetryPort);
+                    udpClient.JoinMulticastGroup(address, 50);
+                    udpClient.Send(packet.Bytes, packet.Bytes.Length, ipEndPoint);
+                    udpClient.Close();
+                }
+                else
+                {
+                    mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Telemetry, "Failed to box telemetry message");
+                }
             }
         }
     }

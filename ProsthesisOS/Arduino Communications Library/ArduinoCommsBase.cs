@@ -11,7 +11,7 @@ namespace ArduinoCommunicationsLibrary
 {
     public abstract class ArduinoCommsBase
     {
-        public event Action<ArduinoMessageBase.DeviceState, ArduinoMessageBase.DeviceState> StateChanged = null;
+        public event Action<ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState, ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState> StateChanged = null;
 
         protected ProsthesisCore.Utility.Logger mLogger = null;
 
@@ -22,7 +22,7 @@ namespace ArduinoCommunicationsLibrary
         protected string mPortName = string.Empty;
 
         protected bool mTelemetryToggled = false;
-        protected ArduinoMessageBase.DeviceState mDeviceState = ArduinoMessageBase.DeviceState.Uninitialized;
+        protected ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState mDeviceState = ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Uninitialized;
 
         protected const int kIDTimeoutMilliseconds = 1000;
         protected const int kArduinoCommsBaudRate = 9600;

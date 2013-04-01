@@ -173,7 +173,7 @@ namespace ProsthesisClientTest
             mPacketParser.AddData(data, len);
         }
 
-        private static void OnTelemetryReceive(ProsthesisCore.Messages.ProsthesisTelemetryContainer msg)
+        private static void OnTelemetryReceive(ProsthesisCore.Telemetry.ProsthesisTelemetry msg)
         {
             mTelemetryLogger.LogMessage(Logger.LoggerChannels.Telemetry, msg.ToString());
         }

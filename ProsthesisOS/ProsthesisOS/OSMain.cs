@@ -58,8 +58,8 @@ namespace ProsthesisOS
         {
             using (var udpClient = new UdpClient(AddressFamily.InterNetwork))
             {
-                ProsthesisTelemetryContainer telem = mContext.MachineState;
-                ProsthesisDataPacket packet = ProsthesisCore.Messages.ProsthesisDataPacket.BoxMessage<ProsthesisTelemetryContainer>(telem);
+                ProsthesisCore.Telemetry.ProsthesisTelemetry telem = mContext.MachineState;
+                ProsthesisDataPacket packet = ProsthesisCore.Messages.ProsthesisDataPacket.BoxMessage<ProsthesisCore.Telemetry.ProsthesisTelemetry>(telem);
 
                 var address = IPAddress.Parse(ProsthesisCore.ProsthesisConstants.kMulticastGroupAddress);
                 var ipEndPoint = new IPEndPoint(address, ProsthesisCore.ProsthesisConstants.kTelemetryPort);

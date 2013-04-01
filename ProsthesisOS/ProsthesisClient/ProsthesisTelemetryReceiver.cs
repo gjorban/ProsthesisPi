@@ -11,7 +11,7 @@ namespace ProsthesisClient
 {
     public class ProsthesisTelemetryReceiver
     {
-        public event Action<ProsthesisCore.Messages.ProsthesisTelemetryContainer> Received = null;
+        public event Action<ProsthesisCore.Telemetry.ProsthesisTelemetry> Received = null;
 
         private ProsthesisCore.ProsthesisPacketParser mParser = new ProsthesisCore.ProsthesisPacketParser();
         private UdpClient mUDPReceiver = null;
@@ -58,11 +58,11 @@ namespace ProsthesisClient
                 while (mParser.MoveNext())
                 {
                     ProsthesisCore.Messages.ProsthesisMessage msg = mParser.Current;
-                    if (msg is ProsthesisCore.Messages.ProsthesisTelemetryContainer)
+                    if (msg is ProsthesisCore.Telemetry.ProsthesisTelemetry)
                     {
                         if (Received != null)
                         {
-                            Received(msg as ProsthesisCore.Messages.ProsthesisTelemetryContainer);
+                            Received(msg as ProsthesisCore.Telemetry.ProsthesisTelemetry);
                         }
                     }
                     else

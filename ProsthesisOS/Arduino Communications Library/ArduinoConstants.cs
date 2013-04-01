@@ -25,24 +25,13 @@ namespace ArduinoCommunicationsLibrary
 
     public class ArduinoMessageBase
     {
-        /// <summary>
-        /// This enum describes the controller's current state. It MUST match the enum on the Arduino in order to be accurate!
-        /// </summary>
-        public enum DeviceState
-        {
-            Uninitialized = -1,
-            Disabled = 0,
-            Active = 1,
-            Fault = 2
-        }
-
         public string ID;
     }
 
     public sealed class ArduinoDeviceStateChange : ArduinoMessageBase
     {
-        public DeviceState FR;
-        public DeviceState TO;
+        public ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState FR;
+        public ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState TO;
 
         public override string ToString()
         {
@@ -64,7 +53,7 @@ namespace ArduinoCommunicationsLibrary
     {
         public string AID;
         public bool TS;
-        public DeviceState DS;
+        public ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState DS;
 
         public override string ToString()
         {
@@ -75,7 +64,7 @@ namespace ArduinoCommunicationsLibrary
     public class ArduinoTelemetryBase : ArduinoMessageBase
     {
         public float x;
-        public DeviceState DS;
+        public ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState DS;
 
         public override string ToString()
         {

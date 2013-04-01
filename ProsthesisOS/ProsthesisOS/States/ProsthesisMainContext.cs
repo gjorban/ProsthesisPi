@@ -18,7 +18,7 @@ namespace ProsthesisOS.States
         public TCP.ConnectionState AuthorizedConnection { get { return mAuthorizedConnection; } }
         public Logger Logger { get { return mLogger; } }
         public bool IsRunning { get { return mRunning; } }
-        public ProsthesisTelemetryContainer MachineState { get { return mTelemetryObject.Clone() as ProsthesisTelemetryContainer; } }
+        public ProsthesisCore.Telemetry.ProsthesisTelemetry MachineState { get { return mTelemetryObject.Clone() as ProsthesisCore.Telemetry.ProsthesisTelemetry; } }
 
         public event ProsthesisStateChangeDelegate StateChanged = null;
 
@@ -31,7 +31,7 @@ namespace ProsthesisOS.States
         private TCP.ConnectionState mAuthorizedConnection = null;
         private System.Threading.ManualResetEvent mMachineActiveWait = new System.Threading.ManualResetEvent(false);
 
-        private ProsthesisTelemetryContainer mTelemetryObject = new ProsthesisTelemetryContainer();
+        private ProsthesisCore.Telemetry.ProsthesisTelemetry mTelemetryObject = new ProsthesisCore.Telemetry.ProsthesisTelemetry();
 
         public ProsthesisMainContext(int tcpPort, Logger logger)
         {
@@ -42,7 +42,7 @@ namespace ProsthesisOS.States
             mSocketServer.MessageAvailable += OnSocketMessageAvailable;
 
             //TODO: discover this based on data from the Arduinos
-            mTelemetryObject.CellVoltages = new float[12];
+         /*   mTelemetryObject.CellVoltages = new float[12];
             for (int i = 0; i < mTelemetryObject.CellVoltages.Length; ++i)
             {
                 mTelemetryObject.CellVoltages[i] = 0f;
@@ -55,7 +55,7 @@ namespace ProsthesisOS.States
                 mTelemetryObject.MotorStates[i].Current = 0f;
                 mTelemetryObject.MotorStates[i].Voltage = 0f;
                 mTelemetryObject.MotorStates[i].DutyCycle = 0f;
-            }
+            }*/
 
             mLogger = logger;
             mLogger.LogMessage(Logger.LoggerChannels.StateMachine, "State machine initializing");

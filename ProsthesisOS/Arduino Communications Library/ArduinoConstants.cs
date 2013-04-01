@@ -3,16 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Arduino_Communications_Test
+namespace ArduinoCommunicationsLibrary
 {
     /// <summary>
     /// These MUST match the Arduino's values!
     /// </summary>
-    public sealed class ArduinoConstants
+    public sealed class ArduinoMessageKeys
     {
-        public const string kMessageIDValue = "ID";
-        public const string kToggleResponseID = "ACK";
-        public const string kTelemetryID = "TM";
+        public const string kMessageIDKey = "ID";
+    }
+
+    public sealed class ArduinoMessageValues
+    {
+        public const string kAcknowledgeID = "ACK";
+        public const string kIdentifyValue = "Id";
+        public const string kTelemetryEnableValue = "Te";
+        public const string kDeviceToggleValue = "Dt";
+        public const string kTelemetryID = "Tm";
+        public const string kDeviceStateChange = "Sc";
     }
 
     public class ArduinoMessageBase
@@ -29,6 +37,17 @@ namespace Arduino_Communications_Test
         }
 
         public string ID;
+    }
+
+    public sealed class ArduinoDeviceStateChange : ArduinoMessageBase
+    {
+        public DeviceState FR;
+        public DeviceState TO;
+
+        public override string ToString()
+        {
+            return string.Format("State change from {0} to {1}", FR, TO);
+        }
     }
 
     public sealed class ArduinoToggleResponse : ArduinoMessageBase

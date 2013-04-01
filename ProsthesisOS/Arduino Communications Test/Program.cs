@@ -6,6 +6,8 @@ using System.IO.Ports;
 
 using System.Xml;
 
+using ArduinoCommunicationsLibrary;
+
 namespace Arduino_Communications_Test
 {
     class Program
@@ -15,7 +17,7 @@ namespace Arduino_Communications_Test
             string fileName = string.Format("Arduino-comms-{0}.txt", System.DateTime.Now.ToString("dd MM yyyy HH-mm-ss"));
             ProsthesisCore.Utility.Logger logger = new ProsthesisCore.Utility.Logger(fileName, true);
 
-            ArduinoCommsBase test = new ArduinoCommsBase("test", logger);
+            ArduinoCommsBase test = new MotorControllerArduino(logger);
             bool telemEnable = false;
             bool arduinoState = false;
             if (test.StartArduinoComms())
@@ -44,6 +46,15 @@ namespace Arduino_Communications_Test
                 while (key != ConsoleKey.X);
 
                 test.StopArduinoComms(true);
+            }
+            else
+            {
+                Console.WriteLine("Failed to connect to the correct Arduino. Press any key to exit");
+                do
+                {
+                    System.Threading.Thread.Sleep(16);
+                }
+                while (!Console.KeyAvailable);
             }
 
             logger.ShutDown();

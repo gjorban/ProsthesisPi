@@ -7,10 +7,12 @@ using System.IO.Ports;
 
 using Newtonsoft.Json;
 
-namespace Arduino_Communications_Test
+namespace ArduinoCommunicationsLibrary
 {
-    internal class ArduinoCommsBase
+    public abstract class ArduinoCommsBase
     {
+        public event Action<ArduinoMessageBase.DeviceState, ArduinoMessageBase.DeviceState> StateChanged = null;
+
         protected ProsthesisCore.Utility.Logger mLogger = null;
 
         protected string mArduinoID = string.Empty;
@@ -22,7 +24,6 @@ namespace Arduino_Communications_Test
         protected bool mTelemetryToggled = false;
         protected ArduinoMessageBase.DeviceState mDeviceState = ArduinoMessageBase.DeviceState.Uninitialized;
 
-        protected const string kArduinoAcknowledgeID = "ACK";
         protected const int kIDTimeoutMilliseconds = 1000;
         protected const int kArduinoCommsBaudRate = 9600;
 
@@ -36,7 +37,9 @@ namespace Arduino_Communications_Test
         {
             bool foundCorrectArduino = false;
 
-            var idPacket = new { ID = "Id" };
+            var idPacket = new ArduinoMessageBase();
+            idPacket.ID = ArduinoMessageValues.kIdentifyValue;
+
             string jsonOutput = Newtonsoft.Json.JsonConvert.SerializeObject(idPacket);
             foreach (string port in SerialPort.GetPortNames())
             {
@@ -68,7 +71,7 @@ namespace Arduino_Communications_Test
                         try
                         {
                             ArduinoIDAckMessage msg = Newtonsoft.Json.JsonConvert.DeserializeObject < ArduinoIDAckMessage>(response);
-                            if (msg.ID == kArduinoAcknowledgeID && msg.AID == mArduinoID)
+                            if (msg.ID == ArduinoMessageValues.kAcknowledgeID && msg.AID == mArduinoID)
                             {
                                 mTelemetryToggled = msg.TS;
                                 mDeviceState = msg.DS;
@@ -82,7 +85,7 @@ namespace Arduino_Communications_Test
                             }
                             else
                             {
-                                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Not the arduino we're looking for on port {0} with AID {1}", port, mArduinoID));
+                                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Found a Prosthesis Arduino, but not the arduino we're looking for on port {0} with AID {1}", port, mArduinoID));
                             }
                         }
                         //Catch malformed JSON response, if there is one at all
@@ -124,7 +127,7 @@ namespace Arduino_Communications_Test
             if (mPort != null && mPort.IsOpen)
             {
                 mTelemetryToggled = !mTelemetryToggled;
-                var toggle = new { ID = "Te", EN = mTelemetryToggled, PD = periodMS };
+                var toggle = new { ID = ArduinoMessageValues.kTelemetryEnableValue, EN = mTelemetryToggled, PD = periodMS };
                 string json = Newtonsoft.Json.JsonConvert.SerializeObject(toggle);
                 mPort.Write(json);
             }
@@ -134,7 +137,7 @@ namespace Arduino_Communications_Test
         {
             if (mPort != null && mPort.IsOpen)
             {
-                var toggle = new { ID = "Dt", EN = enable };
+                var toggle = new { ID = ArduinoMessageValues.kDeviceToggleValue, EN = enable };
                 string json = Newtonsoft.Json.JsonConvert.SerializeObject(toggle);
                 mPort.Write(json);
             }
@@ -164,15 +167,26 @@ namespace Arduino_Communications_Test
             }
 
             string msgId;
-            if (vals.TryGetValue(ArduinoConstants.kMessageIDValue, out msgId))
+            if (vals.TryGetValue(ArduinoMessageKeys.kMessageIDKey, out msgId))
             {
                 switch (msgId)
                 {
-                case ArduinoConstants.kTelemetryID:
+                case ArduinoMessageValues.kTelemetryID:
                     mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", JsonConvert.DeserializeObject<ArduinoTelemetryBase>(data)));
                     break;
-                case ArduinoConstants.kToggleResponseID:
+                case ArduinoMessageValues.kAcknowledgeID:
+                    //Echo ACKS for now
                     mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", JsonConvert.DeserializeObject<ArduinoToggleResponse>(data)));
+                    break;
+
+                case ArduinoMessageValues.kDeviceStateChange:
+                    ArduinoDeviceStateChange changed = JsonConvert.DeserializeObject<ArduinoDeviceStateChange>(data);
+                    mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", changed));
+                    if (StateChanged != null)
+                    {
+                        StateChanged(changed.FR, changed.TO);
+                    }
+                    mDeviceState = changed.TO;
                     break;
                 default:
                     mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Unrecognized JSON message from {0} on port {1}: \"{2}\"", ArduinoID, mPortName, data));

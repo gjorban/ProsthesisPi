@@ -10,7 +10,7 @@ namespace ArduinoCommunicationsLibrary
         public const string kArduinoID = "sens";
         public SensorNodeArduino(ProsthesisCore.Utility.Logger logger) : base(kArduinoID, logger) { }
 
-        protected override void OnTelemetryAvailable(string telemetryData)
+        protected override void OnTelemetryReceive(string telemetryData)
         {
 
         }

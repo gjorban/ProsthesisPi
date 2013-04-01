@@ -155,48 +155,36 @@ namespace ArduinoCommunicationsLibrary
         {
             //Log each message from the arduino if we want to see its raw output
             //mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, data);
-            Dictionary<string, string> vals = null;
-            try
-            {
-                vals = JsonConvert.DeserializeObject<Dictionary<string, string>>(data);
-            }
-            catch
-            {
-                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Unable to parse JSON message from {0} on port {1}: \"{2}\"", ArduinoID, mPortName, data));
-                return;
-            }
+            var idType = new {ID = "none"};
 
-            string msgId;
-            if (vals.TryGetValue(ArduinoMessageKeys.kMessageIDKey, out msgId))
+            idType = JsonConvert.DeserializeAnonymousType(data, idType);
+            
+            switch (idType.ID)
             {
-                switch (msgId)
+            case ArduinoMessageValues.kTelemetryID:
+                OnTelemetryReceive(data);
+                break;
+            case ArduinoMessageValues.kAcknowledgeID:
+                //Echo ACKS for now
+                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", JsonConvert.DeserializeObject<ArduinoToggleResponse>(data)));
+                break;
+
+            case ArduinoMessageValues.kDeviceStateChange:
+                ArduinoDeviceStateChange changed = JsonConvert.DeserializeObject<ArduinoDeviceStateChange>(data);
+                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", changed));
+                if (StateChanged != null)
                 {
-                case ArduinoMessageValues.kTelemetryID:
-                    mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", JsonConvert.DeserializeObject<ArduinoTelemetryBase>(data)));
-                    OnTelemetryAvailable(data);
-                    break;
-                case ArduinoMessageValues.kAcknowledgeID:
-                    //Echo ACKS for now
-                    mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", JsonConvert.DeserializeObject<ArduinoToggleResponse>(data)));
-                    break;
-
-                case ArduinoMessageValues.kDeviceStateChange:
-                    ArduinoDeviceStateChange changed = JsonConvert.DeserializeObject<ArduinoDeviceStateChange>(data);
-                    mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", changed));
-                    if (StateChanged != null)
-                    {
-                        StateChanged(changed.FR, changed.TO);
-                    }
-                    mDeviceState = changed.TO;
-                    break;
-                default:
-                    mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Unrecognized JSON message from {0} on port {1}: \"{2}\"", ArduinoID, mPortName, data));
-                    break;
+                    StateChanged(changed.FR, changed.TO);
                 }
+                mDeviceState = changed.TO;
+                break;
+            default:
+                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Unrecognized JSON message from {0} on port {1}: \"{2}\"", ArduinoID, mPortName, data));
+                break;
             }
         }
 
-        protected abstract void OnTelemetryAvailable(string telemetryData);
+        protected abstract void OnTelemetryReceive(string telemetryData);
 
         private void OnSerialDataAvailable(object sender, SerialDataReceivedEventArgs e)
         {

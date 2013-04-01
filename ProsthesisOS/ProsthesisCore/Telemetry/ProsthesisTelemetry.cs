@@ -21,23 +21,50 @@ namespace ProsthesisCore.Telemetry
             Fault = 2
         }
 
+        /// <summary>
+        /// Note, this is a Proto-buf and JSON adapter class! The member names MUST match those in the respective telemetry JSON packets being sent by the Arduinos!!
+        /// </summary>
         [ProtoContract]
         public sealed class ProthesisMotorTelemetry : ICloneable
         {
+            /// <summary>
+            /// Motor current (Amps)
+            /// </summary>
             [ProtoMember(1)]
-            public float[] C = null; //Motor current (Amps)
+            public float[] C = null;
+            /// <summary>
+            /// Motor voltage (mV)
+            /// </summary>
             [ProtoMember(2)]
-            public int[] V = null; //Motor voltage (mV)
+            public int[] V = null;
+            /// <summary>
+            /// Pressure (kPa) at pump output
+            /// </summary>
             [ProtoMember(3)]
-            public float[] Pout = null; //Pressure (kPa) at pump output
+            public float[] Pout = null;
+            /// <summary>
+            /// Pressure (kPa) at load
+            /// </summary>
             [ProtoMember(4)]
-            public float[] Pload = null; //Pressure (kPa) at load
+            public float[] Pload = null;
+            /// <summary>
+            /// Flow rate (units TBD)
+            /// </summary>
             [ProtoMember(5)]
-            public float[] Fl = null; //Flow rate (units TBD)
+            public float[] Fl = null;
+            /// <summary>
+            /// Using load sense or constant pressure
+            /// </summary>
             [ProtoMember(6)]
-            public bool Load = false; //Using load sense or constant pressure
+            public bool Load = false;
+            /// <summary>
+            /// Motor duty cycle %
+            /// </summary>
             [ProtoMember(7)]
-            public float[] Dt = null; //Motor duty cycle %
+            public float[] Dt = null;
+            /// <summary>
+            /// Device state
+            /// </summary>
             [ProtoMember(8)]
             public DeviceState Ds;
 

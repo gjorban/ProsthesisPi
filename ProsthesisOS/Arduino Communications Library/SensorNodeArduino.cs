@@ -5,10 +5,10 @@ using System.Text;
 
 namespace ArduinoCommunicationsLibrary
 {
-    public sealed class MotorControllerArduino : ArduinoCommsBase
+    public sealed class SensorNodeArduino : ArduinoCommsBase
     {
-        public const string kArduinoID = "mcon";
-        public MotorControllerArduino(ProsthesisCore.Utility.Logger logger) : base(kArduinoID, logger) { }
+        public const string kArduinoID = "sens";
+        public SensorNodeArduino(ProsthesisCore.Utility.Logger logger) : base(kArduinoID, logger) { }
 
         protected override void OnTelemetryAvailable(string telemetryData)
         {

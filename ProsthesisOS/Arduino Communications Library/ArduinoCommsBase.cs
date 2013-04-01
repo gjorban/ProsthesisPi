@@ -173,6 +173,7 @@ namespace ArduinoCommunicationsLibrary
                 {
                 case ArduinoMessageValues.kTelemetryID:
                     mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", JsonConvert.DeserializeObject<ArduinoTelemetryBase>(data)));
+                    OnTelemetryAvailable(data);
                     break;
                 case ArduinoMessageValues.kAcknowledgeID:
                     //Echo ACKS for now
@@ -194,6 +195,8 @@ namespace ArduinoCommunicationsLibrary
                 }
             }
         }
+
+        protected abstract void OnTelemetryAvailable(string telemetryData);
 
         private void OnSerialDataAvailable(object sender, SerialDataReceivedEventArgs e)
         {

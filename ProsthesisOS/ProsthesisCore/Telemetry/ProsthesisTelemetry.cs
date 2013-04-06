@@ -187,7 +187,7 @@ namespace ProsthesisCore.Telemetry
 
             public object Clone()
             {
-                return null;
+                return new ProsthesisMotorTelemetry(this);
             }
         }
 

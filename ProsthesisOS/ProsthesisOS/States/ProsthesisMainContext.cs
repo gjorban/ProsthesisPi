@@ -99,9 +99,9 @@ namespace ProsthesisOS.States
             }
         }
 
-        public void UpdateMotorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProthesisMotorTelemetry motorTelem)
+        public void UpdateMotorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry motorTelem)
         {
-            mTelemetryObject.MotorTelem = new ProsthesisCore.Telemetry.ProsthesisTelemetry.ProthesisMotorTelemetry(motorTelem);
+            mTelemetryObject.MT = new ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry(motorTelem);
         }
 
         #region Event Receivers

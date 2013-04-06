@@ -136,7 +136,7 @@ namespace ProsthesisOS.States
             }
         }
 
-        public void UpdateMotorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProthesisMotorTelemetry motorTelem)
+        public void UpdateMotorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry motorTelem)
         {
             mContext.UpdateMotorTelemetry(motorTelem);
         }

@@ -27,8 +27,6 @@ namespace ProsthesisCore.Telemetry
         /// Note, this is a Proto-buf and JSON adapter class! The member names MUST match those in the respective telemetry JSON packets being sent by the Arduinos!!
         /// </summary>
         [ProtoContract]
-        [System.Serializable]
-        [TypeConverter(typeof(ExpandableObjectConverter))]
         public class ProsthesisMotorTelemetry : ICloneable
         {
             private const int kDefaultNumMotors = 2;
@@ -90,8 +88,8 @@ namespace ProsthesisCore.Telemetry
 
             //Pressure set points in kPa
             [ProtoMember(9)]
-            public float[] Pset = null;
-            public float[] PressureSetPoints { get { return Pset; } set { Pset = value; } }
+            public float Pset = 0f;
+            public float PressureSetPoints { get { return Pset; } set { Pset = value; } }
 
             public float LeftEfficiency
             {
@@ -115,7 +113,7 @@ namespace ProsthesisCore.Telemetry
                 Load = false;
                 Dt = new float[0];
                 Ds = DeviceState.Disconnected;
-                Pset = new float[0];
+                Pset = 0f;
             }
 
             public ProsthesisMotorTelemetry(ProsthesisMotorTelemetry other)
@@ -173,16 +171,7 @@ namespace ProsthesisCore.Telemetry
                 }
 
                 Ds = other.Ds;
-
-                if (other.Pset != null)
-                {
-                    Pset = new float[other.Pset.Length];
-                    Array.Copy(other.Pset, Pset, Pset.Length);
-                }
-                else
-                {
-                    Pset = new float[0];
-                }
+                Pset = other.Pset;
             }
 
             public object Clone()
@@ -192,8 +181,6 @@ namespace ProsthesisCore.Telemetry
         }
 
         [ProtoContract]
-        [System.Serializable]
-        [TypeConverter(typeof(ExpandableObjectConverter))]
         public class ProsthesisSensorTelemetry : ICloneable
         {
             //Cotents TBD
@@ -255,8 +242,6 @@ namespace ProsthesisCore.Telemetry
         }
 
         [ProtoContract]
-        [System.Serializable]
-        [TypeConverter(typeof(ExpandableObjectConverter))]
         public class ProsthesisBMSTelemetry : ICloneable
         {
             //Contents TBD

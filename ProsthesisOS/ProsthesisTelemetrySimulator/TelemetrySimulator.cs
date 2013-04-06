@@ -41,7 +41,7 @@ namespace ProsthesisTelemetrySimulator
             motorTelem.MotorDutyCycles = new float[numMotorsToSimulate];
             motorTelem.PressureLoad = new float[numMotorsToSimulate];
             motorTelem.OutputPressure = new float[numMotorsToSimulate];
-            motorTelem.PressureSetPoints = new float[numMotorsToSimulate];
+            motorTelem.PressureSetPoints = 0f;
 
             ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisSensorTelemetry sensTelem = mTelem.SensorTelem;
             sensTelem.MotorTemps = new float[numMotorsToSimulate];

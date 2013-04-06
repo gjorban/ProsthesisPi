@@ -5,14 +5,13 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{51467B66-6985-4CD4-A996-C13C56E30EC0}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{9A24BFA4-5B1F-4878-8F2A-F46AFCB378B9}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ProsthesisOS</RootNamespace>
-    <AssemblyName>ProsthesisOS</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
+    <RootNamespace>ProsthesisTelemetrySimulator</RootNamespace>
+    <AssemblyName>ProsthesisTelemetrySimulator</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -34,49 +33,50 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="protobuf-net, Version=2.0.0.622, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\ProsthesisCore\lib\protobuf-net.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TelemetrySimulator.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TelemetrySimulator.Designer.cs">
+      <DependentUpon>TelemetrySimulator.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="OSMain.cs" />
-    <Compile Include="States\AwaitingAuth.cs" />
-    <Compile Include="States\Base\IProsthesisContext.cs" />
-    <Compile Include="States\EmergencyShutdown.cs" />
-    <Compile Include="States\Initialize.cs" />
-    <Compile Include="States\Base\ProsthesisStateBase.cs" />
-    <Compile Include="States\OperationalSuperState.cs" />
-    <Compile Include="States\ProsthesisActive.cs" />
-    <Compile Include="States\ProsthesisIdle.cs" />
-    <Compile Include="States\ProsthesisMainContext.cs" />
-    <Compile Include="States\RunSelfTest.cs" />
-    <Compile Include="States\Shutdown.cs" />
-    <Compile Include="States\WaitForBootup.cs" />
-    <Compile Include="States\WaitForConnection.cs" />
-    <Compile Include="TCP\ProsthesisSocketHandler.cs" />
-    <Compile Include="TCP\TcpLib.cs" />
+    <EmbeddedResource Include="TelemetrySimulator.resx">
+      <DependentUpon>TelemetrySimulator.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Arduino Communications Library\Arduino Communications Library.csproj">
-      <Project>{601143B3-7999-44BB-9BB6-ABFA7F970517}</Project>
-      <Name>Arduino Communications Library</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ProsthesisCore\ProsthesisCore.csproj">
       <Project>{25C3E224-9C88-495E-AB0A-4CF5D411F70F}</Project>
       <Name>ProsthesisCore</Name>

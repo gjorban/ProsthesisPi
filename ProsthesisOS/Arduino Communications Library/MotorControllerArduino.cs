@@ -9,18 +9,18 @@ namespace ArduinoCommunicationsLibrary
 {
     public sealed class MotorControllerArduino : ArduinoCommsBase
     {
-        public event Action<ProsthesisTelemetry.ProthesisMotorTelemetry> TelemetryUpdate = null;
+        public event Action<ProsthesisTelemetry.ProsthesisMotorTelemetry> TelemetryUpdate = null;
         public const string kArduinoID = "mcon";
         public MotorControllerArduino(ProsthesisCore.Utility.Logger logger) : base(kArduinoID, logger) { }
 
-        private ProsthesisTelemetry.ProthesisMotorTelemetry mCurrentState = null;
-        public ProsthesisTelemetry.ProthesisMotorTelemetry DeviceState { get { return mCurrentState; } }
+        private ProsthesisTelemetry.ProsthesisMotorTelemetry mCurrentState = null;
+        public ProsthesisTelemetry.ProsthesisMotorTelemetry DeviceState { get { return mCurrentState; } }
 
         protected override void OnTelemetryReceive(string telemetryData)
         {
             try
             {
-                ProsthesisTelemetry.ProthesisMotorTelemetry motorTelem = Newtonsoft.Json.JsonConvert.DeserializeObject<ProsthesisTelemetry.ProthesisMotorTelemetry>(telemetryData);
+                ProsthesisTelemetry.ProsthesisMotorTelemetry motorTelem = Newtonsoft.Json.JsonConvert.DeserializeObject<ProsthesisTelemetry.ProsthesisMotorTelemetry>(telemetryData);
                 mCurrentState = motorTelem;
                 if (TelemetryUpdate != null)
                 {

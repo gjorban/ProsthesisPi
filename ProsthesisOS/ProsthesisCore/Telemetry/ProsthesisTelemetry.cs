@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.ComponentModel;
 
 using ProtoBuf;
 
@@ -26,50 +27,85 @@ namespace ProsthesisCore.Telemetry
         /// Note, this is a Proto-buf and JSON adapter class! The member names MUST match those in the respective telemetry JSON packets being sent by the Arduinos!!
         /// </summary>
         [ProtoContract]
-        public sealed class ProthesisMotorTelemetry : ICloneable
+        [System.Serializable]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public class ProsthesisMotorTelemetry : ICloneable
         {
+            private const int kDefaultNumMotors = 2;
+
             /// <summary>
             /// Motor current (Amps)
             /// </summary>
             [ProtoMember(1)]
             public float[] C = null;
+            public float[] Current { get { return C; } set { C = value; } }
             /// <summary>
             /// Motor voltage (mV)
             /// </summary>
             [ProtoMember(2)]
             public int[] V = null;
+            public int[] MilliVolts { get { return V; } set { V = value; } }
+
             /// <summary>
             /// Pressure (kPa) at pump output
             /// </summary>
             [ProtoMember(3)]
             public float[] Pout = null;
+            public float[] OutputPressure { get { return Pout; } set { Pout = value; } }
+
             /// <summary>
             /// Pressure (kPa) at load
             /// </summary>
             [ProtoMember(4)]
             public float[] Pload = null;
+            public float[] PressureLoad { get { return Pload; } set { Pload = value; } }
+
             /// <summary>
             /// Flow rate (units TBD)
             /// </summary>
             [ProtoMember(5)]
             public float[] Fl = null;
+            public float[] FlowRate { get { return Fl; } set { Fl = value; } }
+
             /// <summary>
             /// Using load sense or constant pressure
             /// </summary>
             [ProtoMember(6)]
             public bool Load = false;
+            public bool UsingLoadSense { get { return Load; } set { Load = value; } }
+
             /// <summary>
             /// Motor duty cycle %
             /// </summary>
             [ProtoMember(7)]
             public float[] Dt = null;
+            public float[] MotorDutyCycles { get { return Dt; } set { Dt = value; } }
+
             /// <summary>
             /// Device state
             /// </summary>
             [ProtoMember(8)]
             public DeviceState Ds;
+            public DeviceState DeviceState { get { return Ds; } set { Ds = value; } }
 
-            public ProthesisMotorTelemetry()
+            //Pressure set points in kPa
+            [ProtoMember(9)]
+            public float[] Pset = null;
+            public float[] PressureSetPoints { get { return Pset; } set { Pset = value; } }
+
+            public float LeftEfficiency
+            {
+                //TODO: Correct calculations?
+                get { return (Fl[0] * Pout[0]) / (C[0] * V[0]); }
+            }
+
+            public float RightEfficiency
+            {
+                //TODO: Correct calculations?
+                get { return (Fl[1] * Pout[1]) / (C[1] * V[1]); }
+            }
+
+            public ProsthesisMotorTelemetry()
             {
                 C = new float[0];
                 V = new int[0];
@@ -79,9 +115,10 @@ namespace ProsthesisCore.Telemetry
                 Load = false;
                 Dt = new float[0];
                 Ds = DeviceState.Disconnected;
+                Pset = new float[0];
             }
 
-            public ProthesisMotorTelemetry(ProthesisMotorTelemetry other)
+            public ProsthesisMotorTelemetry(ProsthesisMotorTelemetry other)
             {
                 if (other.C != null)
                 {
@@ -136,6 +173,16 @@ namespace ProsthesisCore.Telemetry
                 }
 
                 Ds = other.Ds;
+
+                if (other.Pset != null)
+                {
+                    Pset = new float[other.Pset.Length];
+                    Array.Copy(other.Pset, Pset, Pset.Length);
+                }
+                else
+                {
+                    Pset = new float[0];
+                }
             }
 
             public object Clone()
@@ -145,20 +192,60 @@ namespace ProsthesisCore.Telemetry
         }
 
         [ProtoContract]
-        public sealed class ProsthesisSensorTelemetry : ICloneable
+        [System.Serializable]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public class ProsthesisSensorTelemetry : ICloneable
         {
             //Cotents TBD
             [ProtoMember(1)]
             public DeviceState Ds;
 
+            /// <summary>
+            /// Oil temperatures in Celsius
+            /// </summary>
+            [ProtoMember(2)]
+            public float[] Ot;
+            public float[] OilTemps { get { return Ot; } set { Ot = value; } }
+
+            /// <summary>
+            /// Motor temperatures in Celsius
+            /// </summary>
+            [ProtoMember(3)]
+            public float[] Mt;
+            public float[] MotorTemps { get { return Mt; } set { Mt = value; } }
+            
+
             public ProsthesisSensorTelemetry() 
             {
                 Ds = DeviceState.Uninitialized;
+
+                Ot = new float[0];
+                Mt = new float[0];
             }
 
             public ProsthesisSensorTelemetry(ProsthesisSensorTelemetry other) 
             {
                 Ds = other.Ds;
+
+                if (other.Ot != null)
+                {
+                    Ot = new float[other.Ot.Length];
+                    Array.Copy(other.Ot, Ot, Ot.Length);
+                }
+                else
+                {
+                    Ot = new float[0];
+                }
+
+                if (other.Mt != null)
+                {
+                    Mt = new float[other.Mt.Length];
+                    Array.Copy(other.Mt, Mt, Mt.Length);
+                }
+                else
+                {
+                    Mt = new float[0];
+                }
             }
 
             public object Clone()
@@ -168,7 +255,9 @@ namespace ProsthesisCore.Telemetry
         }
 
         [ProtoContract]
-        public sealed class ProsthesisBMSTelemetry : ICloneable
+        [System.Serializable]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public class ProsthesisBMSTelemetry : ICloneable
         {
             //Contents TBD
             [ProtoMember(1)]
@@ -188,20 +277,23 @@ namespace ProsthesisCore.Telemetry
         }
 
         [ProtoMember(1)]
-        public ProthesisMotorTelemetry MotorTelem = new ProthesisMotorTelemetry();
+        public ProsthesisMotorTelemetry MT = new ProsthesisMotorTelemetry();
+        public ProsthesisMotorTelemetry MotorTelem { get { return MT; } set { MT = value; } }
 
         [ProtoMember(2)]
-        public ProsthesisSensorTelemetry SensorTelem = new ProsthesisSensorTelemetry();
+        public ProsthesisSensorTelemetry ST = new ProsthesisSensorTelemetry();
+        public ProsthesisSensorTelemetry SensorTelem { get { return ST; } set { ST = value; } }
 
         [ProtoMember(3)]
-        public ProsthesisBMSTelemetry BMSTelem = new ProsthesisBMSTelemetry();
+        public ProsthesisBMSTelemetry BMST = new ProsthesisBMSTelemetry();
+        public ProsthesisBMSTelemetry BMSTelem { get { return BMST; } set { BMST = value; } }
 
         public ProsthesisTelemetry() { }
         public ProsthesisTelemetry(ProsthesisTelemetry other)
         {
-            MotorTelem = new ProthesisMotorTelemetry(other.MotorTelem);
-            SensorTelem = new ProsthesisSensorTelemetry(other.SensorTelem);
-            BMSTelem = new ProsthesisBMSTelemetry(other.BMSTelem);
+            MT = new ProsthesisMotorTelemetry(other.MT);
+            ST = new ProsthesisSensorTelemetry(other.ST);
+            BMST = new ProsthesisBMSTelemetry(other.BMST);
         }
         
         public object Clone()

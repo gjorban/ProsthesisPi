@@ -22,6 +22,8 @@ namespace ProsthesisOS.States
 
         public event ProsthesisStateChangeDelegate StateChanged = null;
 
+        private ProsthesisStateBase mDeferredStateChange = null;
+
         private ProsthesisStateBase mCurrentState = null;
         private TCP.TcpServer mSocketConnection = null;
         private TCP.ProsthesisSocketHandler mSocketServer = new TCP.ProsthesisSocketHandler();
@@ -67,8 +69,18 @@ namespace ProsthesisOS.States
 
         public void ChangeState(ProsthesisStateBase to)
         {
+            if (!mRunning)
+            {
+                return;
+            }
+
+            if (mDeferredStateChange != null)
+            {
+                mDeferredStateChange = to;
+                return;
+            }
+
             ProsthesisStateBase oldState = mCurrentState;
-            ProsthesisStateBase chainedState = null;
 
             if (mCurrentState != to)
             {
@@ -79,23 +91,28 @@ namespace ProsthesisOS.States
 
                 if (to != null)
                 {
-                    chainedState = to.OnEnter();
+                    mDeferredStateChange = to.OnEnter();
                 }
                 mCurrentState = to;
 
-                mLogger.LogMessage(Logger.LoggerChannels.StateMachine, string.Format("Changing state from {0} to {1}",
-                    oldState != null ? oldState.GetType().ToString() : "<none>",
-                    to != null ? to.GetType().ToString() : "<none>"));
-
-                if (StateChanged != null)
+                if (mRunning)
                 {
-                    StateChanged(oldState, mCurrentState);
-                }
+                    mLogger.LogMessage(Logger.LoggerChannels.StateMachine, string.Format("Changing state from {0} to {1}",
+                        oldState != null ? oldState.GetType().ToString() : "<none>",
+                        to != null ? to.GetType().ToString() : "<none>"));
 
-                if (chainedState != null && chainedState != mCurrentState)
-                {
-                    ChangeState(chainedState);
+                    if (StateChanged != null)
+                    {
+                        StateChanged(oldState, mCurrentState);
+                    }
                 }
+            }
+
+            if (mDeferredStateChange != null && mRunning)
+            {
+                ProsthesisStateBase nextState = mDeferredStateChange;
+                mDeferredStateChange = null;
+                ChangeState(nextState);
             }
         }
 

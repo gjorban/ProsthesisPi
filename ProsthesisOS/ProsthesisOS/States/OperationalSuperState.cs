@@ -17,6 +17,7 @@ namespace ProsthesisOS.States
         public bool IsRunning { get { return mContext.IsRunning; } }
 
         private ProsthesisStateBase mCurrentState = null;
+        private ProsthesisStateBase mDeferredStateChange = null;
 
         private ArduinoCommunicationsLibrary.MotorControllerArduino mMotorControllerArduino = null;
         private bool mRunning = false;
@@ -98,8 +99,11 @@ namespace ProsthesisOS.States
         public void Terminate(string reason)
         {
             //Exit our current state first
-            ChangeState(null);
             mRunning = false;
+            if (mCurrentState != null)
+            {
+                mCurrentState.OnExit();
+            }
             mContext.Terminate(reason);
         }
 
@@ -110,29 +114,40 @@ namespace ProsthesisOS.States
                 return;
             }
 
+            if (mDeferredStateChange != null)
+            {
+                mDeferredStateChange = to;
+                return;
+            }
+
             if (to != mCurrentState)
             {
                 if (mCurrentState != null)
                 {
                     mCurrentState.OnExit();
                 }
+
                 ProsthesisStateBase oldState = mCurrentState;
-                ProsthesisStateBase chainedState = null;
 
                 if (to != null)
                 {
-                    chainedState = to.OnEnter();
+                    mDeferredStateChange = to.OnEnter();
                 }
                 mCurrentState = to;
 
-                mContext.Logger.LogMessage(Logger.LoggerChannels.StateMachine, string.Format("Changing sub-state of {2} state from {0} to {1}",
-                    oldState != null ? oldState.GetType().ToString() : "<none>",
-                    to != null ? to.GetType().ToString() : "<none>", GetType()));
-
-                if (chainedState != null && chainedState != mCurrentState)
+                if (mRunning)
                 {
-                    ChangeState(chainedState);
+                    mContext.Logger.LogMessage(Logger.LoggerChannels.StateMachine, string.Format("Changing sub-state of {2} state from {0} to {1}",
+                        oldState != null ? oldState.GetType().ToString() : "<none>",
+                        to != null ? to.GetType().ToString() : "<none>", GetType()));
                 }
+            }
+
+            if (mDeferredStateChange != null && mRunning)
+            {
+                ProsthesisStateBase nextState = mDeferredStateChange;
+                mDeferredStateChange = null;
+                ChangeState(nextState);
             }
         }
 

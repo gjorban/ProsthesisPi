@@ -64,6 +64,10 @@ namespace ProsthesisOS.States
             mLogger.LogMessage(Logger.LoggerChannels.StateMachine, string.Format("State machine terminated because: {0}", reason));
             mSocketConnection.Stop();
             mMachineActiveWait.Set();
+            if (mCurrentState != null)
+            {
+                mCurrentState.OnExit();
+            }
             mRunning = false;
         }
 

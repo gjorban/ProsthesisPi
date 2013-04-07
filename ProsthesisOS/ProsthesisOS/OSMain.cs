@@ -50,6 +50,11 @@ namespace ProsthesisOS
 
             while (Console.ReadKey().Key != ConsoleKey.X) { }
 
+            if (mContext.IsRunning)
+            {
+                mContext.Terminate("User terminated");
+            }
+
             mTelemetryBroadcastTimer.Stop();
             mLogger.ShutDown();
         }

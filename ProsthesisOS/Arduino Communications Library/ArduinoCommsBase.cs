@@ -29,6 +29,8 @@ namespace ArduinoCommunicationsLibrary
         protected const int kIDTimeoutMilliseconds = 1000;
         protected const int kArduinoCommsBaudRate = 9600;
 
+        private System.Threading.Thread mWorkerThread = null;
+
         public ArduinoCommsBase(string arduinoID, ProsthesisCore.Utility.Logger logger)
         {
             mArduinoID = arduinoID;
@@ -37,6 +39,12 @@ namespace ArduinoCommunicationsLibrary
 
         public bool StartArduinoComms()
         {
+            if (mWorkerThread != null)
+            {
+                mWorkerThread.Abort();
+                mWorkerThread = null;
+            }
+
             bool foundCorrectArduino = false;
 
             var idPacket = new ArduinoMessageBase();
@@ -66,7 +74,7 @@ namespace ArduinoCommunicationsLibrary
                     string response = string.Empty;
                     try
                     {
-                        response = serialPort.ReadLine();
+                        response = ReadLine(serialPort);
                     }
                     //Catch case where the serial port is unavailable. MOve to next port
                     catch (TimeoutException)
@@ -88,10 +96,17 @@ namespace ArduinoCommunicationsLibrary
 
                                 mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Got the arduino we're looking for on port {0} with AID {1}. Telemetry is {2} and the device's state is {3}", port, mArduinoID, msg.TS, msg.DS));
                                 mPort = serialPort;
-                                mPort.DataReceived += new SerialDataReceivedEventHandler(OnSerialDataAvailable);
+
+                                //Don't timeout anymore. Our worker thread will yield while it waits for data
+                                mPort.ReadTimeout = -1;
+                                mWorkerThread = new System.Threading.Thread(new System.Threading.ParameterizedThreadStart(ReadSerialDataFromPort));
+
                                 mPort.Disposed += new EventHandler(OnPortDisposed);
                                 mPortName = port;
                                 foundCorrectArduino = true;
+
+                                //Start our worker
+                                mWorkerThread.Start();
                             }
                             else
                             {
@@ -125,11 +140,16 @@ namespace ArduinoCommunicationsLibrary
 
         public void StopArduinoComms(bool disableBeforeStop)
         {
+            if (mWorkerThread != null)
+            {
+                mWorkerThread.Abort();
+                mWorkerThread = null;
+            }
+
             if (mPort != null)
             {
                 SerialPort port = mPort;
                 mPort = null;
-                port.DataReceived -= OnSerialDataAvailable;
                 mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Closing Arduino comms on port {0} for AID {1}", mPortName, ArduinoID));
                 ToggleArduinoState(false);
                 port.Close();
@@ -162,6 +182,15 @@ namespace ArduinoCommunicationsLibrary
             if (mPort != null)
             {
                 StopArduinoComms(false);
+            }
+        }
+
+        private void ReadSerialDataFromPort(object context)
+        {
+            while (mPort != null && mPort.IsOpen)
+            {
+                string newLine = ReadLine(mPort);
+                OnDataAvailable(newLine);
             }
         }
 
@@ -200,10 +229,29 @@ namespace ArduinoCommunicationsLibrary
 
         protected abstract void OnTelemetryReceive(string telemetryData);
 
-        private void OnSerialDataAvailable(object sender, SerialDataReceivedEventArgs e)
+        /// <summary>
+        /// Due to limitations in our Mono environment, only readbyte works. So wrap the readbytes into a readline
+        /// See http://www.mono-project.com/HowToSystemIOPorts
+        /// </summary>
+        /// <param name="onPort"></param>
+        /// <returns></returns>
+        private string ReadLine(SerialPort onPort)
         {
-            //Pass the data onto the data handler
-            OnDataAvailable(mPort.ReadLine());
+            if (onPort.IsOpen)
+            {
+                string returnString = string.Empty;
+                byte tmpByte = (byte)onPort.ReadByte();
+
+                while (tmpByte != 255 && (char)tmpByte != '\n')
+                {
+                    returnString += ((char)tmpByte);
+                    tmpByte = (byte)onPort.ReadByte();
+                }
+
+                return returnString;
+            }
+
+            return string.Empty;
         }
     }
 }

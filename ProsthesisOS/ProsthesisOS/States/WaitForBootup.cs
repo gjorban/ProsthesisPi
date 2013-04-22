@@ -20,12 +20,14 @@ namespace ProsthesisOS.States
         {
             if (mArduinos != null)
             {
+                bool allConnected = true;
                 foreach (ArduinoCommunicationsLibrary.ArduinoCommsBase arduino in mArduinos)
                 {
                     if (!arduino.StartArduinoComms())
                     {
                         mContext.RaiseFault(string.Format("Unable to open serial communications with AID {0}", arduino.ArduinoID));
-                        return null;
+                        allConnected = false;
+                        break;
                     }
                     else
                     {
@@ -36,7 +38,21 @@ namespace ProsthesisOS.States
                         }
                     }
                 }
+
+                if (!allConnected)
+                {
+                    foreach (ArduinoCommunicationsLibrary.ArduinoCommsBase arduino in mArduinos)
+                    {
+                        arduino.StopArduinoComms(true);
+                    }
+                    return null;
+                }
+                else
+                {
+                    return new RunSelfTest(mContext, mArduinos);
+                }
             }
+
             return this;
         }
 
@@ -49,7 +65,7 @@ namespace ProsthesisOS.States
             switch (command)
             {
             case ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Initialize:
-                return new RunSelfTest(mContext);
+                return new RunSelfTest(mContext, mArduinos);
 
             case ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Shutdown:
                 return new Shutdown(mContext);

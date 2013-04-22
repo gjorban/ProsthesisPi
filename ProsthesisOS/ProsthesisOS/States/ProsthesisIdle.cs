@@ -9,10 +9,19 @@ namespace ProsthesisOS.States
 {
     internal class ProsthesisIdle : ProsthesisStateBase
     {
-        public ProsthesisIdle(IProsthesisContext context) : base(context){}
+        private ArduinoCommunicationsLibrary.ArduinoCommsBase[] mArduinos = null;
+
+        public ProsthesisIdle(IProsthesisContext context, ArduinoCommunicationsLibrary.ArduinoCommsBase[] arduinos) : base(context) 
+        {
+            mArduinos = arduinos;
+        }
 
         public override ProsthesisStateBase OnEnter()
         {
+            foreach (ArduinoCommunicationsLibrary.ArduinoCommsBase arduino in mArduinos)
+            {
+                arduino.ToggleArduinoState(true);
+            }
             return this;
         }
 
@@ -23,7 +32,7 @@ namespace ProsthesisOS.States
             switch (command)
             {
             case ProsthesisCore.ProsthesisConstants.ProsthesisCommand.Resume:
-                return new ProsthesisActive(mContext);
+                    return new ProsthesisActive(mContext, mArduinos);
             }
             return base.OnProsthesisCommand(command, from);
         }

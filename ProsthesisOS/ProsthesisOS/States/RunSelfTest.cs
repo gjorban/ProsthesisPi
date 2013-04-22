@@ -10,7 +10,12 @@ namespace ProsthesisOS.States
     internal class RunSelfTest : ProsthesisStateBase
     {
         private System.Timers.Timer mTimer = null;
-        public RunSelfTest(IProsthesisContext context) : base(context) { }
+        private ArduinoCommunicationsLibrary.ArduinoCommsBase[] mArduinos = null;
+
+        public RunSelfTest(IProsthesisContext context, ArduinoCommunicationsLibrary.ArduinoCommsBase[] arduinos) : base(context) 
+        {
+            mArduinos = arduinos;
+        }
 
         public override ProsthesisStateBase OnEnter()
         {
@@ -36,7 +41,7 @@ namespace ProsthesisOS.States
             //Make sure that our context is actually running before proceeding to IDLE
             if (mContext.IsRunning)
             {
-                mContext.ChangeState(new ProsthesisIdle(mContext));
+                mContext.ChangeState(new ProsthesisIdle(mContext, mArduinos));
             }
         }
     }

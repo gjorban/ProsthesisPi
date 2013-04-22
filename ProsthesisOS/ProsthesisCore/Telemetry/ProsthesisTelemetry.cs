@@ -148,6 +148,16 @@ namespace ProsthesisCore.Telemetry
                     Pout = new float[0];
                 }
 
+                if (other.Fl != null)
+                {
+                    Fl = new float[other.Fl.Length];
+                    Array.Copy(other.Fl, Fl, other.Fl.Length);
+                }
+                else
+                {
+                    Fl = new float[0];
+                }
+
                 if (other.Pload != null)
                 {
                     Pload = new float[other.Pload.Length];

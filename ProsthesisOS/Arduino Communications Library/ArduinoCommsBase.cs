@@ -27,6 +27,7 @@ namespace ArduinoCommunicationsLibrary
         protected ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState mDeviceState = ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Uninitialized;
 
         protected const int kIDTimeoutMilliseconds = 1000;
+        protected const int kNumRetries = 3;
         protected const int kArduinoCommsBaudRate = 9600;
 
         private System.Threading.Thread mWorkerThread = null;
@@ -72,16 +73,19 @@ namespace ArduinoCommunicationsLibrary
                     serialPort.ReadTimeout = kIDTimeoutMilliseconds;
 
                     string response = string.Empty;
-                    try
+                    for (int i = 0; i < kNumRetries; ++i)
                     {
-                        response = ReadLine(serialPort);
-                    }
-                    //Catch case where the serial port is unavailable. MOve to next port
-                    catch (TimeoutException)
-                    {
-                        mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Port {0} timed out. Ignoring", port));
-                        serialPort.Close();
-                        continue;
+                        try
+                        {
+                            response = ReadLine(serialPort);
+                            break;
+                        }
+                        //Catch case where the serial port is unavailable. MOve to next port
+                        catch (TimeoutException)
+                        {
+                            mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Port {0} timed out. Attempt {1} of {2}", port, i + 1, kNumRetries));
+                            continue;
+                        }
                     }
 
                     if (!string.IsNullOrEmpty(response))

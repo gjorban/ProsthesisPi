@@ -17,6 +17,7 @@ namespace Arduino_Communications_Test
             string fileName = string.Format("Arduino-comms-{0}.txt", System.DateTime.Now.ToString("dd MM yyyy HH-mm-ss"));
             ProsthesisCore.Utility.Logger logger = new ProsthesisCore.Utility.Logger(fileName, true);
 
+            ArduinoCommsBase.InitializeSerialConnections(logger);
             ArduinoCommsBase test = new MotorControllerArduino(logger);
             bool telemEnable = false;
             bool arduinoState = false;

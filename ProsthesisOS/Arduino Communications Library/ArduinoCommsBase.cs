@@ -27,10 +27,31 @@ namespace ArduinoCommunicationsLibrary
         protected ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState mDeviceState = ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Uninitialized;
 
         protected const int kIDTimeoutMilliseconds = 1000;
+        /// <summary>
+        /// The amount of time we need to wait for the Arduino bootloader to starts
+        /// </summary>
+        protected const int kArduinoBootloaderDelayMilliseconds = 3000;
         protected const int kNumRetries = 3;
         protected const int kArduinoCommsBaudRate = 9600;
 
         private System.Threading.Thread mWorkerThread = null;
+
+        public static bool IsRunningOnLinux()
+        {
+            int p = (int)Environment.OSVersion.Platform;
+
+            return (p == 4 || p == 128 || p == 6);
+        }
+
+        public static void InitializeSerialConnections(ProsthesisCore.Utility.Logger logger)
+        {
+            string[] ports = GetPortNames();
+            logger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Found {0} ports", ports.Length));
+            foreach (string port in ports)
+            {
+                logger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Port {0} found", port));
+            }
+        }
 
         public ArduinoCommsBase(string arduinoID, ProsthesisCore.Utility.Logger logger)
         {
@@ -63,6 +84,9 @@ namespace ArduinoCommunicationsLibrary
                 if (!serialPort.IsOpen)
                 {
                     serialPort.Open();
+
+                    //Wait for the Arduino to boot once we've opened the port
+                    System.Threading.Thread.Sleep(kArduinoBootloaderDelayMilliseconds);
 
                     //Disable telemtry just incase
                     var toggle = new { ID = ArduinoMessageValues.kTelemetryEnableValue, EN = false };
@@ -270,13 +294,13 @@ namespace ArduinoCommunicationsLibrary
             List<string> serial_ports = new List<string>();
 
             // Are we on Unix?
-            if (p == 4 || p == 128 || p == 6)
+            if (IsRunningOnLinux())
             {
                 string[] ttys = System.IO.Directory.GetFiles("/dev/", "tty*");
                 foreach (string dev in ttys)
                 {
                     //Arduino MEGAs show up as ttyACM due to their different USB<->RS232 chips
-                    if (dev.StartsWith("/dev/ttyS") || dev.StartsWith("/dev/ttyUSB") || dev.StartsWith("/dev/ttyACM"))
+                    if (dev.StartsWith("/dev/ttyUSB") || dev.StartsWith("/dev/ttyACM"))
                     {
                         serial_ports.Add(dev);
                     }

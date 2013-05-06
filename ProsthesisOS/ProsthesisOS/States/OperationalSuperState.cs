@@ -32,6 +32,7 @@ namespace ProsthesisOS.States
         public override ProsthesisStateBase OnEnter()
         {
             mRunning = true;
+            ArduinoCommunicationsLibrary.ArduinoCommsBase.InitializeSerialConnections(mContext.Logger);
             ProsthesisStateBase initialState = new WaitForBootup(this, new ArduinoCommunicationsLibrary.ArduinoCommsBase[] { mMotorControllerArduino });
             ChangeState(initialState);
 

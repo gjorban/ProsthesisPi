@@ -46,20 +46,22 @@ namespace ArduinoCommunicationsLibrary
                 mWorkerThread = null;
             }
 
+            string[] ports = GetPortNames();
             bool foundCorrectArduino = false;
 
             var idPacket = new ArduinoMessageBase();
             idPacket.ID = ArduinoMessageValues.kIdentifyValue;
 
             string jsonOutput = Newtonsoft.Json.JsonConvert.SerializeObject(idPacket);
-            foreach (string port in SerialPort.GetPortNames())
-            {
-                SerialPort serialPort = new SerialPort(port);
 
+            foreach (string port in ports)
+            {
+                SerialPort serialPort = new SerialPort(port, kArduinoCommsBaudRate);
+
+                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Now checking Arduino on port {0}", port));
                 //Only check unopened ports
                 if (!serialPort.IsOpen)
                 {
-                    serialPort.BaudRate = kArduinoCommsBaudRate;
                     serialPort.Open();
 
                     //Disable telemtry just incase
@@ -256,6 +258,36 @@ namespace ArduinoCommunicationsLibrary
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// From http://stackoverflow.com/questions/434494/serial-port-rs232-in-mono-for-multiple-platforms
+        /// </summary>
+        /// <returns></returns>
+        private static string[] GetPortNames()
+        {
+            int p = (int)Environment.OSVersion.Platform;
+            List<string> serial_ports = new List<string>();
+
+            // Are we on Unix?
+            if (p == 4 || p == 128 || p == 6)
+            {
+                string[] ttys = System.IO.Directory.GetFiles("/dev/", "tty*");
+                foreach (string dev in ttys)
+                {
+                    //Arduino MEGAs show up as ttyACM due to their different USB<->RS232 chips
+                    if (dev.StartsWith("/dev/ttyS") || dev.StartsWith("/dev/ttyUSB") || dev.StartsWith("/dev/ttyACM"))
+                    {
+                        serial_ports.Add(dev);
+                    }
+                }
+            }
+            else
+            {
+                serial_ports.AddRange(SerialPort.GetPortNames());
+            }
+
+            return serial_ports.ToArray();
         }
     }
 }

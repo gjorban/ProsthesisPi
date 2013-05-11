@@ -12,6 +12,7 @@ namespace ArduinoCommunicationsLibrary
     public abstract class ArduinoCommsBase
     {
         public event Action<ArduinoCommsBase, ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState, ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState> StateChanged = null;
+        public event Action<ArduinoCommsBase> Disconnected = null;
 
         protected ProsthesisCore.Utility.Logger mLogger = null;
 
@@ -26,6 +27,7 @@ namespace ArduinoCommunicationsLibrary
         protected bool mTelemetryToggled = false;
         public bool TelemetryActive { get { return mTelemetryToggled; } }
 
+        public ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState ArduinoState { get { return mDeviceState; } }
         protected ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState mDeviceState = ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Uninitialized;
 
         protected const int kIDTimeoutMilliseconds = 1000;
@@ -88,7 +90,19 @@ namespace ArduinoCommunicationsLibrary
                 //Only check unopened ports
                 if (!serialPort.IsOpen)
                 {
-                    serialPort.Open();
+                    try
+                    {
+                        serialPort.Open();
+                    }
+                    //Port is already open in another context, or Arduino. In any case, skip this one
+                    catch (UnauthorizedAccessException)
+                    {
+                        if (mLogger != null)
+                        {
+                            mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Unable to open port {0} because of unauthorized access exception", port));
+                        }
+                        continue;
+                    }
 
                     //Wait for the Arduino to boot once we've opened the port
                     System.Threading.Thread.Sleep(kArduinoBootloaderDelayMilliseconds);
@@ -179,6 +193,12 @@ namespace ArduinoCommunicationsLibrary
                     if (!foundCorrectArduino)
                     {
                         serialPort.Close();
+                        serialPort.Dispose();
+                    }
+                    else
+                    {
+                        //We've found our Arduino, no need to continue checking
+                        break;
                     }
                 }
             }
@@ -188,10 +208,18 @@ namespace ArduinoCommunicationsLibrary
 
         public void StopArduinoComms(bool disableBeforeStop)
         {
+            if (mDeviceState == ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Disconnected)
+            {
+                return;
+            }
+
             if (mWorkerThread != null)
             {
                 mWorkerThread = null;
             }
+
+            mTelemetryToggled = false;
+            mDeviceState = ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Disconnected;
 
             if (mPort != null)
             {
@@ -207,13 +235,29 @@ namespace ArduinoCommunicationsLibrary
                 mPort = null;
                 port.Dispose();
             }
+
+            if (Disconnected != null)
+            {
+                Disconnected(this);
+            }
         }
 
+        /// <summary>
+        /// Tells the arduino to start sending telemetry at the given period. NOTE: The arduino may not be capable of sending telemetry at the exact rate specified.
+        /// </summary>
+        /// <param name="periodMS">The time in milliseconds between telemetry dumps from the Arduino. A value of 0 disables telemetry.</param>
         public virtual void TelemetryToggle(int periodMS)
         {
             if (mPort != null && mPort.IsOpen)
             {
-                mTelemetryToggled = !mTelemetryToggled;
+                if (periodMS == 0)
+                {
+                    mTelemetryToggled = false;
+                }
+                else
+                {
+                    mTelemetryToggled = true;
+                }
                 var toggle = new { ID = ArduinoMessageValues.kTelemetryEnableValue, EN = mTelemetryToggled, PD = periodMS };
                 string json = Newtonsoft.Json.JsonConvert.SerializeObject(toggle);
                 mPort.Write(json);
@@ -236,6 +280,11 @@ namespace ArduinoCommunicationsLibrary
             {
                 StopArduinoComms(false);
             }
+            //In the case our port was cleared and we got a disposed message, publish the event
+            else if (mDeviceState != ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Disconnected && Disconnected != null)
+            {
+                Disconnected(this);
+            }
         }
 
         private void ReadSerialDataFromPort(object context)
@@ -249,6 +298,7 @@ namespace ArduinoCommunicationsLibrary
 
         protected virtual void OnDataAvailable(string data)
         {
+            //If we didn't get any data, just return
             if (string.IsNullOrEmpty(data))
             {
                 return;
@@ -267,12 +317,18 @@ namespace ArduinoCommunicationsLibrary
                     break;
                 case ArduinoMessageValues.kAcknowledgeID:
                     //Echo ACKS for now
-                    mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", JsonConvert.DeserializeObject<ArduinoToggleResponse>(data)));
+                    if (mLogger != null)
+                    {
+                        mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", JsonConvert.DeserializeObject<ArduinoToggleResponse>(data)));
+                    }
                     break;
 
                 case ArduinoMessageValues.kDeviceStateChange:
                     ArduinoDeviceStateChange changed = JsonConvert.DeserializeObject<ArduinoDeviceStateChange>(data);
-                    mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", changed));
+                    if (mLogger != null)
+                    {
+                        mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("{0}", changed));
+                    }
                     if (StateChanged != null)
                     {
                         StateChanged(this, changed.FR, changed.TO);
@@ -298,13 +354,12 @@ namespace ArduinoCommunicationsLibrary
         /// <returns></returns>
         private string ReadLine(SerialPort onPort)
         {
-            if (onPort.IsOpen)
+            if (onPort != null && onPort.IsOpen)
             {
                 string returnString = string.Empty;
                 try
                 {
                     byte tmpByte = (byte)onPort.ReadByte();
-
 
                     while (tmpByte != 255 && (char)tmpByte != '\n')
                     {
@@ -314,8 +369,16 @@ namespace ArduinoCommunicationsLibrary
 
                     return returnString;
                 }
-                catch (System.IO.IOException e)
+                //Catch timeouts induced by the closing of the port
+                catch (TimeoutException)
                 {
+                    onPort.Dispose();
+                    return string.Empty;
+                }
+                //Catch IO exceptions induced by disposing the port on disconnect
+                catch (System.IO.IOException)
+                {
+                    onPort.Dispose();
                     return string.Empty;
                 }
             }

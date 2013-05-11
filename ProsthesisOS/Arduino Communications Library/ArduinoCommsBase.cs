@@ -369,6 +369,11 @@ namespace ArduinoCommunicationsLibrary
 
                     return returnString;
                 }
+                catch (InvalidOperationException)
+                {
+                    onPort.Dispose();
+                    return string.Empty;
+                }
                 //Catch timeouts induced by the closing of the port
                 catch (TimeoutException)
                 {

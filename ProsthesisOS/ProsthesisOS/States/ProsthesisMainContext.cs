@@ -120,6 +120,11 @@ namespace ProsthesisOS.States
             }
         }
 
+        public void UpdateSensorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisSensorTelemetry sensor)
+        {
+            mTelemetryObject.ST = new ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisSensorTelemetry(sensor);
+        }
+
         public void UpdateMotorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry motorTelem)
         {
             mTelemetryObject.MT = new ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry(motorTelem);

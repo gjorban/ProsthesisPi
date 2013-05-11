@@ -20,6 +20,7 @@ namespace ProsthesisOS.States.Base
         void ChangeState(ProsthesisStateBase to);
         void Terminate(string reason);
 
+        void UpdateSensorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisSensorTelemetry sensor);
         void UpdateMotorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry motorTelem);
     }
 }

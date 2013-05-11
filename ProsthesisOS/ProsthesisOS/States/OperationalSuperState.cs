@@ -20,12 +20,16 @@ namespace ProsthesisOS.States
         private ProsthesisStateBase mDeferredStateChange = null;
 
         private ArduinoCommunicationsLibrary.MotorControllerArduino mMotorControllerArduino = null;
+        private ArduinoCommunicationsLibrary.SensorNodeArduino mSensorNodeArduino = null;
         private bool mRunning = false;
 
         public OperationalSuperState(IProsthesisContext context) : base(context) 
         {
             mMotorControllerArduino = new ArduinoCommunicationsLibrary.MotorControllerArduino(context.Logger);
             mMotorControllerArduino.TelemetryUpdate += UpdateMotorTelemetry;
+
+            mSensorNodeArduino = new ArduinoCommunicationsLibrary.SensorNodeArduino(context.Logger);
+            mSensorNodeArduino.TelemetryUpdate += UpdateSensorTelemetry;
         }
 
         #region ProsthesisStateBase Impl
@@ -33,7 +37,7 @@ namespace ProsthesisOS.States
         {
             mRunning = true;
             ArduinoCommunicationsLibrary.ArduinoCommsBase.InitializeSerialConnections(mContext.Logger);
-            ProsthesisStateBase initialState = new WaitForBootup(this, new ArduinoCommunicationsLibrary.ArduinoCommsBase[] { mMotorControllerArduino });
+            ProsthesisStateBase initialState = new WaitForBootup(this, new ArduinoCommunicationsLibrary.ArduinoCommsBase[] { mMotorControllerArduino, mSensorNodeArduino });
             ChangeState(initialState);
 
             return this;
@@ -56,6 +60,18 @@ namespace ProsthesisOS.States
                 mMotorControllerArduino.StopArduinoComms(true);
                 mMotorControllerArduino.TelemetryUpdate -= UpdateMotorTelemetry;
                 mMotorControllerArduino = null;
+            }
+
+            if (mSensorNodeArduino != null)
+            {
+                if (mSensorNodeArduino.TelemetryActive)
+                {
+                    mSensorNodeArduino.TelemetryToggle(0);
+                }
+
+                mSensorNodeArduino.StopArduinoComms(true);
+                mSensorNodeArduino.TelemetryUpdate -= UpdateSensorTelemetry;
+                mSensorNodeArduino = null;
             }
         }
 
@@ -155,6 +171,11 @@ namespace ProsthesisOS.States
         public void UpdateMotorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry motorTelem)
         {
             mContext.UpdateMotorTelemetry(motorTelem);
+        }
+
+        public void UpdateSensorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisSensorTelemetry sensor)
+        {
+            mContext.UpdateSensorTelemetry(sensor);
         }
         #endregion
 

@@ -29,7 +29,10 @@ namespace ArduinoCommunicationsLibrary
             }
             catch (Exception e)
             {
-                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("AID:{0} failed to parse JSON \"{1}\" because of {2}", mArduinoID, telemetryData, e));
+                if (mLogger != null)
+                {
+                    mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("AID:{0} failed to parse JSON \"{1}\" because of {2}", mArduinoID, telemetryData, e));
+                }
             }
         }
     }

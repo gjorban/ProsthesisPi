@@ -9,18 +9,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProsthesisClientTest", "Pro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProsthesisClient", "ProsthesisClient\ProsthesisClient.csproj", "{CF4C8DC4-1868-4C85-ABE4-99EE35BE8BDC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BE472274-F6EE-426D-B423-2DF308C01C96}"
-	ProjectSection(SolutionItems) = preProject
-		Local.testsettings = Local.testsettings
-		ProsthesisOS.vsmdi = ProsthesisOS.vsmdi
-		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arduino Communications Test", "Arduino Communications Test\Arduino Communications Test.csproj", "{5B6D7734-6C9B-47A7-BAE2-E4B3FE48F313}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arduino Communications Library", "Arduino Communications Library\Arduino Communications Library.csproj", "{601143B3-7999-44BB-9BB6-ABFA7F970517}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProsthesisTelemetrySimulator", "ProsthesisTelemetrySimulator\ProsthesisTelemetrySimulator.csproj", "{9A24BFA4-5B1F-4878-8F2A-F46AFCB378B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProsthesisValidation", "ProsthesisValidation\ProsthesisValidation.csproj", "{08CCF693-A332-4502-830B-51CC893D78BE}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
@@ -105,6 +100,16 @@ Global
 		{9A24BFA4-5B1F-4878-8F2A-F46AFCB378B9}.Release|Mixed Platforms.Build.0 = Release|x86
 		{9A24BFA4-5B1F-4878-8F2A-F46AFCB378B9}.Release|x86.ActiveCfg = Release|x86
 		{9A24BFA4-5B1F-4878-8F2A-F46AFCB378B9}.Release|x86.Build.0 = Release|x86
+		{08CCF693-A332-4502-830B-51CC893D78BE}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{08CCF693-A332-4502-830B-51CC893D78BE}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{08CCF693-A332-4502-830B-51CC893D78BE}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{08CCF693-A332-4502-830B-51CC893D78BE}.Debug|x86.ActiveCfg = Debug|x86
+		{08CCF693-A332-4502-830B-51CC893D78BE}.Debug|x86.Build.0 = Debug|x86
+		{08CCF693-A332-4502-830B-51CC893D78BE}.Release|Any CPU.ActiveCfg = Release|x86
+		{08CCF693-A332-4502-830B-51CC893D78BE}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{08CCF693-A332-4502-830B-51CC893D78BE}.Release|Mixed Platforms.Build.0 = Release|x86
+		{08CCF693-A332-4502-830B-51CC893D78BE}.Release|x86.ActiveCfg = Release|x86
+		{08CCF693-A332-4502-830B-51CC893D78BE}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

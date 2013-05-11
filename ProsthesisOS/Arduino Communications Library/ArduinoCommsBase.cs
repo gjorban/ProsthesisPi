@@ -21,6 +21,8 @@ namespace ArduinoCommunicationsLibrary
         protected SerialPort mPort = null;
         protected string mPortName = string.Empty;
 
+        public bool IsConnected { get { return mPort != null && mPort.IsOpen; } }
+
         protected bool mTelemetryToggled = false;
         public bool TelemetryActive { get { return mTelemetryToggled; } }
 
@@ -79,7 +81,10 @@ namespace ArduinoCommunicationsLibrary
             {
                 SerialPort serialPort = new SerialPort(port, kArduinoCommsBaudRate);
 
-                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Now checking Arduino on port {0}", port));
+                if (mLogger != null)
+                {
+                    mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Now checking Arduino on port {0}", port));
+                }
                 //Only check unopened ports
                 if (!serialPort.IsOpen)
                 {
@@ -109,7 +114,10 @@ namespace ArduinoCommunicationsLibrary
                         //Catch case where the serial port is unavailable. MOve to next port
                         catch (TimeoutException)
                         {
-                            mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Port {0} timed out. Attempt {1} of {2}", port, i + 1, kNumRetries));
+                            if (mLogger != null)
+                            {
+                                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Port {0} timed out. Attempt {1} of {2}", port, i + 1, kNumRetries));
+                            }
                             continue;
                         }
                     }
@@ -124,12 +132,16 @@ namespace ArduinoCommunicationsLibrary
                                 mTelemetryToggled = msg.TS;
                                 mDeviceState = msg.DS;
 
-                                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Got the arduino we're looking for on port {0} with AID {1}. Telemetry is {2} and the device's state is {3}", port, mArduinoID, msg.TS, msg.DS));
+                                if (mLogger != null)
+                                {
+                                    mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Got the arduino we're looking for on port {0} with AID {1}. Telemetry is {2} and the device's state is {3}", port, mArduinoID, msg.TS, msg.DS));
+                                }
                                 mPort = serialPort;
 
                                 //Don't timeout anymore. Our worker thread will yield while it waits for data
                                 mPort.ReadTimeout = -1;
                                 mWorkerThread = new System.Threading.Thread(new System.Threading.ParameterizedThreadStart(ReadSerialDataFromPort));
+                                mWorkerThread.Name = string.Format("Arduino IO worker for AID {0}", mArduinoID);
 
                                 mPort.Disposed += new EventHandler(OnPortDisposed);
                                 mPortName = port;
@@ -138,7 +150,7 @@ namespace ArduinoCommunicationsLibrary
                                 //Start our worker
                                 mWorkerThread.Start();
                             }
-                            else
+                            else if (mLogger != null)
                             {
                                 mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Found a Prosthesis Arduino, but not the arduino we're looking for on port {0} with AID {1}", port, mArduinoID));
                             }
@@ -146,14 +158,20 @@ namespace ArduinoCommunicationsLibrary
                         //Catch malformed JSON response, if there is one at all
                         catch (Newtonsoft.Json.JsonSerializationException)
                         {
-                            mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Malformed response. Ignoring port {0}", port));
+                            if (mLogger != null)
+                            {
+                                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Malformed response. Ignoring port {0}", port));
+                            }
                         }
                         catch (Newtonsoft.Json.JsonReaderException)
                         {
-                            mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Malformed response. Ignoring port {0}", port));
+                            if (mLogger != null)
+                            {
+                                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Malformed response. Ignoring port {0}", port));
+                            }
                         }
                     }
-                    else
+                    else if (mLogger != null)
                     {
                         mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Serial port {0} doesn't have an arduino", port));
                     }
@@ -172,17 +190,22 @@ namespace ArduinoCommunicationsLibrary
         {
             if (mWorkerThread != null)
             {
-                mWorkerThread.Abort();
                 mWorkerThread = null;
             }
 
             if (mPort != null)
             {
                 SerialPort port = mPort;
-                mPort = null;
-                mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Closing Arduino comms on port {0} for AID {1}", mPortName, ArduinoID));
+                if (mLogger != null)
+                {
+                    mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Closing Arduino comms on port {0} for AID {1}", mPortName, ArduinoID));
+                }
                 ToggleArduinoState(false);
-                port.Close();
+
+                //Set a time out so our thread wakes up and exits
+                mPort.ReadTimeout = 1;
+                mPort = null;
+                port.Dispose();
             }
         }
 
@@ -226,6 +249,11 @@ namespace ArduinoCommunicationsLibrary
 
         protected virtual void OnDataAvailable(string data)
         {
+            if (string.IsNullOrEmpty(data))
+            {
+                return;
+            }
+
             //Log each message from the arduino if we want to see its raw output
             //mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, data);
             var idType = new { ID = "none" };
@@ -252,7 +280,10 @@ namespace ArduinoCommunicationsLibrary
                     mDeviceState = changed.TO;
                     break;
                 default:
-                    mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Unrecognized JSON message from {0} on port {1}: \"{2}\"", ArduinoID, mPortName, data));
+                    if (mLogger != null)
+                    {
+                        mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Unrecognized JSON message from {0} on port {1}: \"{2}\"", ArduinoID, mPortName, data));
+                    }
                     break;
             }
         }
@@ -270,15 +301,23 @@ namespace ArduinoCommunicationsLibrary
             if (onPort.IsOpen)
             {
                 string returnString = string.Empty;
-                byte tmpByte = (byte)onPort.ReadByte();
-
-                while (tmpByte != 255 && (char)tmpByte != '\n')
+                try
                 {
-                    returnString += ((char)tmpByte);
-                    tmpByte = (byte)onPort.ReadByte();
-                }
+                    byte tmpByte = (byte)onPort.ReadByte();
 
-                return returnString;
+
+                    while (tmpByte != 255 && (char)tmpByte != '\n')
+                    {
+                        returnString += ((char)tmpByte);
+                        tmpByte = (byte)onPort.ReadByte();
+                    }
+
+                    return returnString;
+                }
+                catch (System.IO.IOException e)
+                {
+                    return string.Empty;
+                }
             }
 
             return string.Empty;

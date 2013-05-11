@@ -142,7 +142,6 @@ namespace ProsthesisValidation.Arduino
             ArduinoCommsBase sensorArduino = new SensorNodeArduino(null);
             TestDelegate sensorConnectDel = new TestDelegate(delegate() { sensorArduino.StartArduinoComms(); });
             TestDelegate motorConnectDel = new TestDelegate(delegate() { motorArduino.StartArduinoComms(); });
-            
 
             Assert.DoesNotThrow(motorConnectDel);
             Assert.DoesNotThrow(sensorConnectDel);
@@ -166,7 +165,6 @@ namespace ProsthesisValidation.Arduino
             Assert.DoesNotThrow(connectDel);
             Assert.IsTrue(motorArduino.IsConnected);
             Console.WriteLine(string.Format("Arduino {0} has now been connected. The test will validate behaviour when it is unplugged. Uplug the arduino to continue", motorArduino.ArduinoID));
-
 
             System.Threading.ManualResetEvent disconnectEvent = new System.Threading.ManualResetEvent(false);
             motorArduino.Disconnected += delegate(ArduinoCommsBase ard)

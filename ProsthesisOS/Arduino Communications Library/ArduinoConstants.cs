@@ -21,6 +21,7 @@ namespace ArduinoCommunicationsLibrary
         public const string kDeviceToggleValue = "Dt";
         public const string kTelemetryID = "Tm";
         public const string kDeviceStateChange = "Sc";
+        public const string kHeartbeatEnableValue = "Hb";
     }
 
     public class ArduinoMessageBase

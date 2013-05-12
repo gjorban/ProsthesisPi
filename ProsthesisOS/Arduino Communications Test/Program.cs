@@ -25,6 +25,8 @@ namespace Arduino_Communications_Test
             {
                 Console.WriteLine("Press 'x' to exit. 'T' to enable telemetry, 'E' to toggle device state");
                 ConsoleKey key = ConsoleKey.A;
+
+                test.ToggleHeartbeat(true, 1000, 3);
                 do
                 {
                     System.Threading.Thread.Sleep(16);
@@ -44,7 +46,7 @@ namespace Arduino_Communications_Test
                         }
                     }
                 }
-                while (key != ConsoleKey.X);
+                while (key != ConsoleKey.X && test.IsConnected);
 
                 test.StopArduinoComms(true);
             }

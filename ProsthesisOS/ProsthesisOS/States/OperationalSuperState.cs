@@ -27,9 +27,11 @@ namespace ProsthesisOS.States
         {
             mMotorControllerArduino = new ArduinoCommunicationsLibrary.MotorControllerArduino(context.Logger);
             mMotorControllerArduino.TelemetryUpdate += UpdateMotorTelemetry;
+            mMotorControllerArduino.Disconnected += OnArduinoPrematureDisconnect;
 
             mSensorNodeArduino = new ArduinoCommunicationsLibrary.SensorNodeArduino(context.Logger);
             mSensorNodeArduino.TelemetryUpdate += UpdateSensorTelemetry;
+            mSensorNodeArduino.Disconnected += OnArduinoPrematureDisconnect;
         }
 
         #region ProsthesisStateBase Impl
@@ -57,6 +59,7 @@ namespace ProsthesisOS.States
                     mMotorControllerArduino.TelemetryToggle(0);
                 }
 
+                mMotorControllerArduino.Disconnected -= OnArduinoPrematureDisconnect;
                 mMotorControllerArduino.StopArduinoComms(true);
                 mMotorControllerArduino.TelemetryUpdate -= UpdateMotorTelemetry;
                 mMotorControllerArduino = null;
@@ -69,6 +72,7 @@ namespace ProsthesisOS.States
                     mSensorNodeArduino.TelemetryToggle(0);
                 }
 
+                mSensorNodeArduino.Disconnected -= OnArduinoPrematureDisconnect;
                 mSensorNodeArduino.StopArduinoComms(true);
                 mSensorNodeArduino.TelemetryUpdate -= UpdateSensorTelemetry;
                 mSensorNodeArduino = null;
@@ -170,12 +174,18 @@ namespace ProsthesisOS.States
 
         public void UpdateMotorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry motorTelem)
         {
-            mContext.UpdateMotorTelemetry(motorTelem);
+            if (motorTelem != null)
+            {
+                mContext.UpdateMotorTelemetry(motorTelem);
+            }
         }
 
-        public void UpdateSensorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisSensorTelemetry sensor)
+        public void UpdateSensorTelemetry(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisSensorTelemetry sensorTelem)
         {
-            mContext.UpdateSensorTelemetry(sensor);
+            if (sensorTelem != null)
+            {
+                mContext.UpdateSensorTelemetry(sensorTelem);
+            }
         }
         #endregion
 
@@ -185,6 +195,14 @@ namespace ProsthesisOS.States
             if (to == ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Fault)
             {
                 RaiseFault(string.Format("AID {0} reported a fault.", arduino.ArduinoID));
+            }
+        }
+
+        private void OnArduinoPrematureDisconnect(ArduinoCommunicationsLibrary.ArduinoCommsBase ard)
+        {
+            if (IsRunning)
+            {
+                Terminate(string.Format("Arduino with AID {0} disconnected during operation", ard.ArduinoID));
             }
         }
         #endregion

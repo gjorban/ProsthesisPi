@@ -12,6 +12,8 @@ namespace ProsthesisValidation.Arduino
     [TestFixture()]
     public class ArduinoTests
     {
+        private ProsthesisCore.Utility.Logger mLogger = null;
+
         private class InvalidArduino : ArduinoCommsBase
         {
             public InvalidArduino() : base("invalid", null) { }
@@ -21,10 +23,27 @@ namespace ProsthesisValidation.Arduino
             }
         }
 
+        [SetUp()]
+        public void Setup()
+        {
+            //Uncomment for verbose logs
+            string fileName = string.Format("{0}-{1}.txt", GetType().Name, System.DateTime.Now.ToString("dd MM yyyy HH-mm-ss"));
+           // mLogger = new ProsthesisCore.Utility.Logger(fileName, true);
+        }
+
+        [TearDown()]
+        public void TearDown()
+        {
+            if (mLogger != null)
+            {
+                mLogger.ShutDown();
+            }
+        }
+
         [TestCase()]
         public void TestForArduinoConnection()
         {
-            ArduinoCommsBase motorArduino = new MotorControllerArduino(null);
+            ArduinoCommsBase motorArduino = new MotorControllerArduino(mLogger);
             TestDelegate connectDel = new TestDelegate(delegate() { motorArduino.StartArduinoComms(); });
 
             Assert.DoesNotThrow(connectDel);
@@ -47,7 +66,7 @@ namespace ProsthesisValidation.Arduino
         [TestCase()]
         public void TestArduinoStateToggles()
         {
-            ArduinoCommsBase motorArduino = new MotorControllerArduino(null);
+            ArduinoCommsBase motorArduino = new MotorControllerArduino(mLogger);
             TestDelegate connectDel = new TestDelegate(delegate() { motorArduino.StartArduinoComms(); });
 
             Assert.AreEqual(motorArduino.ArduinoState, ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Uninitialized);
@@ -75,7 +94,7 @@ namespace ProsthesisValidation.Arduino
         [TestCase()]
         public void TestArduinoTelemetryToggles()
         {
-            MotorControllerArduino motorArduino = new MotorControllerArduino(null);
+            MotorControllerArduino motorArduino = new MotorControllerArduino(mLogger);
             TestDelegate connectDel = new TestDelegate(delegate() { motorArduino.StartArduinoComms(); });
 
             Assert.AreEqual(motorArduino.ArduinoState, ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Uninitialized);
@@ -138,8 +157,8 @@ namespace ProsthesisValidation.Arduino
         [TestCase()]
         public void TestArduinoEnumeration()
         {
-            ArduinoCommsBase motorArduino = new MotorControllerArduino(null);
-            ArduinoCommsBase sensorArduino = new SensorNodeArduino(null);
+            ArduinoCommsBase motorArduino = new MotorControllerArduino(mLogger);
+            ArduinoCommsBase sensorArduino = new SensorNodeArduino(mLogger);
             TestDelegate sensorConnectDel = new TestDelegate(delegate() { sensorArduino.StartArduinoComms(); });
             TestDelegate motorConnectDel = new TestDelegate(delegate() { motorArduino.StartArduinoComms(); });
 
@@ -157,13 +176,19 @@ namespace ProsthesisValidation.Arduino
         }
 
         [TestCase()]
-        public void TestForDisconnectionWhileInUse()
+        public void TestForMotorControllerDisconnectionWhileInUse()
         {
-            ArduinoCommsBase motorArduino = new MotorControllerArduino(null);
+            Console.WriteLine("Please ensure that both the Motor controller ('mcon') is connected for this test. Press ENTER when ready");
+            Console.ReadLine();
+
+            ArduinoCommsBase motorArduino = new MotorControllerArduino(mLogger);
             TestDelegate connectDel = new TestDelegate(delegate() { motorArduino.StartArduinoComms(); });
 
             Assert.DoesNotThrow(connectDel);
             Assert.IsTrue(motorArduino.IsConnected);
+
+            motorArduino.ToggleHeartbeat(true, 500, 3);
+
             Console.WriteLine(string.Format("Arduino {0} has now been connected. The test will validate behaviour when it is unplugged. Uplug the arduino to continue", motorArduino.ArduinoID));
 
             System.Threading.ManualResetEvent disconnectEvent = new System.Threading.ManualResetEvent(false);
@@ -176,6 +201,75 @@ namespace ProsthesisValidation.Arduino
 
             Assert.IsFalse(motorArduino.IsConnected);
 
+            Assert.DoesNotThrow(delegate() { motorArduino.StopArduinoComms(true); });
+        }
+
+        [TestCase()]
+        public void TestForSensorNodeDisconnectionWhileInUse()
+        {
+            Console.WriteLine("Please ensure that the sensor arduino ('sens') is connected for this test. Press ENTER when ready");
+            Console.ReadLine();
+
+            ArduinoCommsBase sensorArduino = new SensorNodeArduino(mLogger);
+            TestDelegate connectDel = new TestDelegate(delegate() { sensorArduino.StartArduinoComms(); });
+
+            Assert.DoesNotThrow(connectDel);
+            Assert.IsTrue(sensorArduino.IsConnected);
+
+            sensorArduino.ToggleHeartbeat(true, 500, 3);
+
+            Console.WriteLine(string.Format("Arduino {0} has now been connected. The test will validate behaviour when it is unplugged. Uplug the arduino to continue", sensorArduino.ArduinoID));
+
+            System.Threading.ManualResetEvent disconnectEvent = new System.Threading.ManualResetEvent(false);
+            sensorArduino.Disconnected += delegate(ArduinoCommsBase ard)
+            {
+                disconnectEvent.Set();
+            };
+
+            disconnectEvent.WaitOne();
+            Assert.IsFalse(sensorArduino.IsConnected);
+
+            Assert.DoesNotThrow(delegate() { sensorArduino.StopArduinoComms(true); });
+        }
+
+        [Test()]
+        public void TestForEnumeratedDisconnectionWhileInUse()
+        {
+            Console.WriteLine("Please ensure that both the Motor controller ('mcon') and sensor arduino ('sens') are connected for this test. Press ENTER when ready");
+            Console.ReadLine();
+
+            ArduinoCommsBase motorArduino = new MotorControllerArduino(mLogger);
+            ArduinoCommsBase sensorArduino = new SensorNodeArduino(mLogger);
+            TestDelegate sensorConnectDel = new TestDelegate(delegate() { sensorArduino.StartArduinoComms(); });
+            TestDelegate motorConnectDel = new TestDelegate(delegate() { motorArduino.StartArduinoComms(); });
+
+            Assert.DoesNotThrow(motorConnectDel);
+            Assert.DoesNotThrow(sensorConnectDel);
+
+            Assert.IsTrue(sensorArduino.IsConnected);
+            Assert.IsTrue(motorArduino.IsConnected);
+
+            sensorArduino.ToggleHeartbeat(true, 500, 3);
+            motorArduino.ToggleHeartbeat(true, 500, 3);
+
+            Console.WriteLine(string.Format("Arduino {0} and {1} has now been connected. The test will validate behaviour when one of them is unplugged. Uplug the arduino to continue", motorArduino.ArduinoID, sensorArduino.ArduinoID));
+
+            System.Threading.ManualResetEvent disconnectEvent = new System.Threading.ManualResetEvent(false);
+            motorArduino.Disconnected += delegate(ArduinoCommsBase ard)
+            {
+                disconnectEvent.Set();
+            };
+
+            sensorArduino.Disconnected += delegate(ArduinoCommsBase ard)
+            {
+                disconnectEvent.Set();
+            };
+
+            disconnectEvent.WaitOne();
+
+            Assert.IsFalse(motorArduino.IsConnected && sensorArduino.IsConnected);
+
+            Assert.DoesNotThrow(delegate() { sensorArduino.StopArduinoComms(true); });
             Assert.DoesNotThrow(delegate() { motorArduino.StopArduinoComms(true); });
         }
     }

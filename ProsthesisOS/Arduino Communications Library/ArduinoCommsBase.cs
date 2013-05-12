@@ -30,6 +30,12 @@ namespace ArduinoCommunicationsLibrary
         public ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState ArduinoState { get { return mDeviceState; } }
         protected ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState mDeviceState = ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Uninitialized;
 
+        private int mMaxMissedDeadlinesBeforeFault = 1;
+        private int mNumMissedHeartbeatDeadlines = 0;
+        private int mHeartbeatPeriod = 0;
+
+        private System.Timers.Timer mHeartbeatTimer = null;
+
         protected const int kIDTimeoutMilliseconds = 1000;
         /// <summary>
         /// The amount of time we need to wait for the Arduino bootloader to starts
@@ -111,6 +117,10 @@ namespace ArduinoCommunicationsLibrary
                     var toggle = new { ID = ArduinoMessageValues.kTelemetryEnableValue, EN = false };
                     string disableTelem = Newtonsoft.Json.JsonConvert.SerializeObject(toggle);
                     serialPort.Write(disableTelem);
+
+                    var toggleHB = new {ID = ArduinoMessageValues.kHeartbeatEnableValue, EN = false };
+                    string disableHB = Newtonsoft.Json.JsonConvert.SerializeObject(toggleHB);
+                    serialPort.Write(disableHB);
 
                     //Discard any built up data
                     serialPort.DiscardInBuffer();
@@ -218,6 +228,11 @@ namespace ArduinoCommunicationsLibrary
                 mWorkerThread = null;
             }
 
+            if (mHeartbeatTimer != null)
+            {
+                mHeartbeatTimer.Stop();
+            }
+
             mTelemetryToggled = false;
             mDeviceState = ProsthesisCore.Telemetry.ProsthesisTelemetry.DeviceState.Disconnected;
 
@@ -229,11 +244,17 @@ namespace ArduinoCommunicationsLibrary
                     mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Closing Arduino comms on port {0} for AID {1}", mPortName, ArduinoID));
                 }
                 ToggleArduinoState(false);
+                ToggleHeartbeat(false, 0, 0);
 
                 //Set a time out so our thread wakes up and exits
                 mPort.ReadTimeout = 1;
                 mPort = null;
-                port.Dispose();
+                try
+                {
+                    port.Dispose();
+                }
+                //Eat this exception since we may have had a strange OS disposal
+                catch (System.IO.IOException){}
             }
 
             if (Disconnected != null)
@@ -270,7 +291,57 @@ namespace ArduinoCommunicationsLibrary
             {
                 var toggle = new { ID = ArduinoMessageValues.kDeviceToggleValue, EN = enable };
                 string json = Newtonsoft.Json.JsonConvert.SerializeObject(toggle);
-                mPort.Write(json);
+
+                //For Arduino MEGAs we don't get proper shut down on windows so this will create an IO exception, stop arduino comms here just incase
+                try
+                {
+                    mPort.Write(json);
+                }
+                catch (System.IO.IOException)
+                {
+                    StopArduinoComms(true);
+                }
+            }
+        }
+
+        public void ToggleHeartbeat(bool enable, int period, int numMissedDealinesBeforeFault)
+        {
+            if (mPort != null && mPort.IsOpen)
+            {
+                var toggle = new { ID = ArduinoMessageValues.kHeartbeatEnableValue, EN = enable, PD = period };
+                string json = Newtonsoft.Json.JsonConvert.SerializeObject(toggle);
+
+                //For Arduino MEGAs we don't get proper shut down on windows so this will create an IO exception, stop arduino comms here just incase
+                try
+                {
+                    mPort.Write(json);
+
+                    if (enable)
+                    {
+                        mHeartbeatPeriod = period;
+                        mMaxMissedDeadlinesBeforeFault = numMissedDealinesBeforeFault;
+                        mNumMissedHeartbeatDeadlines = 0;
+
+                        if (mHeartbeatTimer != null)
+                        {
+                            mHeartbeatTimer.Stop();
+                            mHeartbeatTimer = null;
+                        }
+                        mHeartbeatTimer = new System.Timers.Timer(mHeartbeatPeriod);
+                        mHeartbeatTimer.AutoReset = true;
+                        mHeartbeatTimer.Elapsed += new System.Timers.ElapsedEventHandler(HeartbeatDeadlinePassed);
+                    }
+                    else if (mHeartbeatTimer != null)
+                    {
+                        mHeartbeatTimer.Stop();
+                        mHeartbeatTimer = null;
+                    }
+
+                }
+                catch (System.IO.IOException)
+                {
+                    StopArduinoComms(true);
+                }
             }
         }
 
@@ -335,6 +406,16 @@ namespace ArduinoCommunicationsLibrary
                     }
                     mDeviceState = changed.TO;
                     break;
+
+                case ArduinoMessageValues.kHeartbeatEnableValue:
+                    if (mHeartbeatTimer != null)
+                    {
+                        mHeartbeatTimer.Stop();
+                        mHeartbeatTimer.Start();
+                        mNumMissedHeartbeatDeadlines = 0;
+                    }
+                    break;
+
                 default:
                     if (mLogger != null)
                     {
@@ -345,6 +426,15 @@ namespace ArduinoCommunicationsLibrary
         }
 
         protected abstract void OnTelemetryReceive(string telemetryData);
+
+        private void HeartbeatDeadlinePassed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            mNumMissedHeartbeatDeadlines++;
+            if (mNumMissedHeartbeatDeadlines >= mMaxMissedDeadlinesBeforeFault)
+            {
+                StopArduinoComms(true);
+            }
+        }
 
         /// <summary>
         /// Due to limitations in our Mono environment, only readbyte works. So wrap the readbytes into a readline

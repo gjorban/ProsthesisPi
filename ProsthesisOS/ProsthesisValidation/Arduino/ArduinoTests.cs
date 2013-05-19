@@ -178,7 +178,7 @@ namespace ProsthesisValidation.Arduino
         [TestCase()]
         public void TestForMotorControllerDisconnectionWhileInUse()
         {
-            Console.WriteLine("Please ensure that both the Motor controller ('mcon') is connected for this test. Press ENTER when ready");
+            Console.WriteLine("Please ensure that the Motor controller ('mcon') is connected for this test. Press ENTER when ready");
             Console.ReadLine();
 
             ArduinoCommsBase motorArduino = new MotorControllerArduino(mLogger);

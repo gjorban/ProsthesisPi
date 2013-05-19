@@ -243,6 +243,8 @@ namespace ArduinoCommunicationsLibrary
                 {
                     mLogger.LogMessage(ProsthesisCore.Utility.Logger.LoggerChannels.Arduino, string.Format("Closing Arduino comms on port {0} for AID {1}", mPortName, ArduinoID));
                 }
+
+                TelemetryToggle(0);
                 ToggleArduinoState(false);
                 ToggleHeartbeat(false, 0, 0);
 

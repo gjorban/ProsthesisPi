@@ -17,8 +17,22 @@ namespace Arduino_Communications_Test
             string fileName = string.Format("Arduino-comms-{0}.txt", System.DateTime.Now.ToString("dd MM yyyy HH-mm-ss"));
             ProsthesisCore.Utility.Logger logger = new ProsthesisCore.Utility.Logger(fileName, true);
 
+            System.DateTime start = System.DateTime.Now;
+
+            string telemFileName = string.Format("Arduino-telem-{0}.csv", System.DateTime.Now.ToString("dd MM yyyy HH-mm-ss"));
+            System.IO.TextWriter writer = new System.IO.StreamWriter(telemFileName);
+
             ArduinoCommsBase.InitializeSerialConnections(logger);
-            ArduinoCommsBase test = new MotorControllerArduino(logger);
+            MotorControllerArduino test = new MotorControllerArduino(logger);
+
+            test.TelemetryUpdate += new Action<ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry>(delegate(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry obj) {
+                double ts = (System.DateTime.Now - start).Duration().TotalMilliseconds;
+
+                string telemRow = string.Format("{0},{1},{2},{3},{4},{5}", ts, obj.MotorDutyCycles[1], obj.OutputPressure[1], obj.ProportionalTunings[1], obj.IntegralTunings[1], obj.DifferentialTunings[1]);
+                Console.WriteLine(telemRow);
+                writer.WriteLine(telemRow);
+            });
+
             bool telemEnable = false;
             bool arduinoState = false;
             if (test.StartArduinoComms())
@@ -37,7 +51,7 @@ namespace Arduino_Communications_Test
                         if (key == ConsoleKey.T)
                         {
                             telemEnable = !telemEnable;
-                            test.TelemetryToggle(500);
+                            test.TelemetryToggle(telemEnable ? 25 : 0);
                         }
                         else if (key == ConsoleKey.E)
                         {
@@ -60,6 +74,7 @@ namespace Arduino_Communications_Test
                 while (!Console.KeyAvailable);
             }
 
+            writer.Close();
             logger.ShutDown();
         }
     }

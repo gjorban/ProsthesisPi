@@ -91,6 +91,21 @@ namespace ProsthesisCore.Telemetry
             public float Pset = 0f;
             public float PressureSetPoints { get { return Pset; } set { Pset = value; } }
 
+            //Pressure set points in kPa
+            [ProtoMember(10)]
+            public float[] P = null;
+            public float[] ProportionalTunings { get { return P; } set { P = value; } }
+
+            //Pressure set points in kPa
+            [ProtoMember(11)]
+            public float[] I = null;
+            public float[] IntegralTunings { get { return I; } set { I = value; } }
+
+            //Pressure set points in kPa
+            [ProtoMember(12)]
+            public float[] D = null;
+            public float[] DifferentialTunings { get { return D; } set { D = value; } }
+
             public float LeftEfficiency
             {
                 //TODO: Correct calculations?
@@ -114,6 +129,9 @@ namespace ProsthesisCore.Telemetry
                 Dt = new float[0];
                 Ds = DeviceState.Disconnected;
                 Pset = 0f;
+                P = new float[0];
+                I = new float[0];
+                D = new float[0];
             }
 
             public ProsthesisMotorTelemetry(ProsthesisMotorTelemetry other)
@@ -182,6 +200,36 @@ namespace ProsthesisCore.Telemetry
 
                 Ds = other.Ds;
                 Pset = other.Pset;
+
+                if (other.P != null)
+                {
+                    P = new float[other.P.Length];
+                    Array.Copy(other.P, P, other.P.Length);
+                }
+                else
+                {
+                    P = new float[0];
+                }
+
+                if (other.I != null)
+                {
+                    I = new float[other.I.Length];
+                    Array.Copy(other.I, I, other.I.Length);
+                }
+                else
+                {
+                    I = new float[0];
+                }
+
+                if (other.D != null)
+                {
+                    D = new float[other.D.Length];
+                    Array.Copy(other.D, D, other.D.Length);
+                }
+                else
+                {
+                    D = new float[0];
+                }
             }
 
             public object Clone()

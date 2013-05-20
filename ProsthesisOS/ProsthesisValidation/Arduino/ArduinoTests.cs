@@ -140,7 +140,7 @@ namespace ProsthesisValidation.Arduino
                 System.Threading.Thread.Sleep(100);
                 Assert.IsFalse(motorArduino.TelemetryActive);
 
-                //Telemetry timing isn't a hard realtime component. We'll take receiving 75% of what we asked for as a pass
+                //Telemetry timing isn't a hard realtime component. We'll take receiving 95% of what we asked for as a pass
                 bool passed = (float)telemetryCount * 0.95f <= 10.0f * 1000.0f / (float)i;
                 if (passed || i > 50)
                 {
@@ -165,7 +165,7 @@ namespace ProsthesisValidation.Arduino
             //30 minute sleep
             System.Threading.Thread.Sleep(30 * 60 * 1000);
 
-            //Telemetry timing isn't a hard realtime component. We'll take receiving 75% of what we asked for as a pass
+            //Telemetry timing isn't a hard realtime component. We'll take receiving 95% of what we asked for as a pass
             bool passedSoak = (float)telemetryCount * 0.95f <= 1800.0f * 1000.0f / (float)fastestTelem;
             Assert.IsTrue(passedSoak);
 

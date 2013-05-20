@@ -42,7 +42,7 @@ namespace ArduinoCommunicationsLibrary
         /// </summary>
         protected const int kArduinoBootloaderDelayMilliseconds = 3000;
         protected const int kNumRetries = 3;
-        protected const int kArduinoCommsBaudRate = 9600;
+        protected const int kArduinoCommsBaudRate = 57600;
 
         private System.Threading.Thread mWorkerThread = null;
 
@@ -283,7 +283,15 @@ namespace ArduinoCommunicationsLibrary
                 }
                 var toggle = new { ID = ArduinoMessageValues.kTelemetryEnableValue, EN = mTelemetryToggled, PD = periodMS };
                 string json = Newtonsoft.Json.JsonConvert.SerializeObject(toggle);
-                mPort.Write(json);
+                //For Arduino MEGAs we don't get proper shut down on windows so this will create an IO exception, stop arduino comms here just incase
+                try
+                {
+                    mPort.Write(json);
+                }
+                catch (System.IO.IOException)
+                {
+                    StopArduinoComms(true);
+                }
             }
         }
 

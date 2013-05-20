@@ -25,6 +25,7 @@ namespace Arduino_Communications_Test
             ArduinoCommsBase.InitializeSerialConnections(logger);
             MotorControllerArduino test = new MotorControllerArduino(logger);
 
+            writer.WriteLine("Timestamp(ms), Duty Cycle, Pressure, P, I, D");
             test.TelemetryUpdate += new Action<ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry>(delegate(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry obj) {
                 double ts = (System.DateTime.Now - start).Duration().TotalMilliseconds;
 

@@ -163,21 +163,26 @@ namespace ProsthesisValidation.Arduino
             Assert.IsTrue(motorArduino.TelemetryActive);
 
             //30 minute sleep
-            System.Threading.Thread.Sleep(30 * 60 * 1000);
+            Console.WriteLine("\nSystem will now perform a 30 minute soak test to count telemetry packets at the fastest recorded rate. Press ENTER to run this test and any other key to skip it");
+            bool doSoak = Console.ReadKey().Key == ConsoleKey.Enter;
+            if (doSoak)
+            {
+                System.Threading.Thread.Sleep(30 * 60 * 1000);
 
-            //Telemetry timing isn't a hard realtime component. We'll take receiving 95% of what we asked for as a pass
-            bool passedSoak = (float)telemetryCount * 0.95f <= 1800.0f * 1000.0f / (float)fastestTelem;
-            Assert.IsTrue(passedSoak);
+                //Telemetry timing isn't a hard realtime component. We'll take receiving 95% of what we asked for as a pass
+                bool passedSoak = (float)telemetryCount * 0.95f <= 1800.0f * 1000.0f / (float)fastestTelem;
+                Assert.IsTrue(passedSoak);
 
-            Assert.DoesNotThrow(delegate() { motorArduino.TelemetryToggle(0); });
-            //Wait 100ms for the message to cycle
-            System.Threading.Thread.Sleep(100);
-            Assert.IsFalse(motorArduino.TelemetryActive);
-           
-            Assert.DoesNotThrow(delegate() { motorArduino.TelemetryToggle(0); });
-            //Wait 100ms for the message to cycle
-            System.Threading.Thread.Sleep(100);
-            Assert.IsFalse(motorArduino.TelemetryActive);
+                Assert.DoesNotThrow(delegate() { motorArduino.TelemetryToggle(0); });
+                //Wait 100ms for the message to cycle
+                System.Threading.Thread.Sleep(100);
+                Assert.IsFalse(motorArduino.TelemetryActive);
+
+                Assert.DoesNotThrow(delegate() { motorArduino.TelemetryToggle(0); });
+                //Wait 100ms for the message to cycle
+                System.Threading.Thread.Sleep(100);
+                Assert.IsFalse(motorArduino.TelemetryActive);
+            }
 
             Assert.IsTrue(motorArduino.IsConnected);
             Assert.DoesNotThrow(delegate() { motorArduino.StopArduinoComms(true); });

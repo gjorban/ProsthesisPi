@@ -25,11 +25,11 @@ namespace Arduino_Communications_Test
             ArduinoCommsBase.InitializeSerialConnections(logger);
             MotorControllerArduino test = new MotorControllerArduino(logger);
 
-            writer.WriteLine("Timestamp(ms), Duty Cycle, Pressure, P, I, D");
+            writer.WriteLine("Timestamp(ms), Duty Cycle 1, Duty Cycle 2, Pressure 1, pressure 2, P, I, D");
             test.TelemetryUpdate += new Action<ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry>(delegate(ProsthesisCore.Telemetry.ProsthesisTelemetry.ProsthesisMotorTelemetry obj) {
                 double ts = (System.DateTime.Now - start).Duration().TotalMilliseconds;
 
-                string telemRow = string.Format("{0},{1},{2},{3},{4},{5}", ts, obj.MotorDutyCycles[1], obj.OutputPressure[1], obj.ProportionalTunings[1], obj.IntegralTunings[1], obj.DifferentialTunings[1]);
+                string telemRow = string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", ts, obj.MotorDutyCycles[1],obj.MotorDutyCycles[0], obj.OutputPressure[1], obj.OutputPressure[0], obj.ProportionalTunings[1], obj.IntegralTunings[1], obj.DifferentialTunings[1]);
                 Console.WriteLine(telemRow);
                 writer.WriteLine(telemRow);
             });

@@ -29,7 +29,19 @@ namespace ProsthesisCore.Telemetry
         [ProtoContract]
         public class ProsthesisMotorTelemetry : ICloneable
         {
+            //NOTE: This must match the Arduino's indices!
+            public enum HydraulicSystems
+            {
+                Hip = 0,
+                Knee = 1
+            }
+
             private const int kDefaultNumMotors = 2;
+
+            public const float kMaxCurrentAmps = 300.0f;
+            public const float kMaxVoltage = 80.0f;
+            public const float kMaxPressurePSI = 2500.0f;
+            public const float kMaxFlowRateLPM = 24.0f;
 
             /// <summary>
             /// Motor current (Amps)
@@ -59,7 +71,7 @@ namespace ProsthesisCore.Telemetry
             public float[] PressureLoad { get { return Pload; } set { Pload = value; } }
 
             /// <summary>
-            /// Flow rate (units TBD)
+            /// Flow rate (lpm)
             /// </summary>
             [ProtoMember(5)]
             public float[] Fl = null;
@@ -88,20 +100,20 @@ namespace ProsthesisCore.Telemetry
 
             //Pressure set points in kPa
             [ProtoMember(9)]
-            public float Pset = 0f;
-            public float PressureSetPoints { get { return Pset; } set { Pset = value; } }
+            public float[] Pset = null;
+            public float[] PressureSetPoints { get { return Pset; } set { Pset = value; } }
 
-            //Pressure set points in kPa
+            //Proportional tuning value
             [ProtoMember(10)]
             public float[] P = null;
             public float[] ProportionalTunings { get { return P; } set { P = value; } }
 
-            //Pressure set points in kPa
+            //Integral tuning value
             [ProtoMember(11)]
             public float[] I = null;
             public float[] IntegralTunings { get { return I; } set { I = value; } }
 
-            //Pressure set points in kPa
+            //Differential tuning value
             [ProtoMember(12)]
             public float[] D = null;
             public float[] DifferentialTunings { get { return D; } set { D = value; } }
@@ -128,7 +140,7 @@ namespace ProsthesisCore.Telemetry
                 Load = false;
                 Dt = new float[0];
                 Ds = DeviceState.Disconnected;
-                Pset = 0f;
+                Pset = new float[0];
                 P = new float[0];
                 I = new float[0];
                 D = new float[0];
@@ -199,7 +211,15 @@ namespace ProsthesisCore.Telemetry
                 }
 
                 Ds = other.Ds;
-                Pset = other.Pset;
+                if (other.Pset != null)
+                {
+                    Pset = new float[other.Pset.Length];
+                    Array.Copy(other.Pset, Pset, other.Pset.Length);
+                }
+                else
+                {
+                    Pset = new float[0];
+                }
 
                 if (other.P != null)
                 {

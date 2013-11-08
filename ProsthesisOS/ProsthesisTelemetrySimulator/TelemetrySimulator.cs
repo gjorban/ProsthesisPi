@@ -189,7 +189,7 @@ namespace ProsthesisTelemetrySimulator
         private void mHipSetpointSlider_ValueChanged(object sender, EventArgs e)
         {
             int value = mHipSetpointSlider.Value;
-            mTelem.MotorTelem.Pset[(int)ProsthesisTelemetry.ProsthesisMotorTelemetry.HydraulicSystems.Hip] = value;
+            mTelem.MotorTelem.Ps[(int)ProsthesisTelemetry.ProsthesisMotorTelemetry.HydraulicSystems.Hip] = value;
 
             HipSliderChanged(value, mHipSetpointSlider, mHipSetpointNumeric, mKneeSetpointSlider, mKneeSetpointNumeric);
         }
@@ -197,7 +197,7 @@ namespace ProsthesisTelemetrySimulator
         private void mHipSetpointNumeric_ValueChanged(object sender, EventArgs e)
         {
             int value = (int)mHipSetpointNumeric.Value;
-            mTelem.MotorTelem.Pset[(int)ProsthesisTelemetry.ProsthesisMotorTelemetry.HydraulicSystems.Hip] = value;
+            mTelem.MotorTelem.Ps[(int)ProsthesisTelemetry.ProsthesisMotorTelemetry.HydraulicSystems.Hip] = value;
 
             HipNumericChanged(value, mHipSetpointSlider, mHipSetpointNumeric, mKneeSetpointSlider, mKneeSetpointNumeric);
         }

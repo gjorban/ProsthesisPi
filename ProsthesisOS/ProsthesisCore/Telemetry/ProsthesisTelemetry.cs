@@ -100,8 +100,8 @@ namespace ProsthesisCore.Telemetry
 
             //Pressure set points in kPa
             [ProtoMember(9)]
-            public float[] Pset = null;
-            public float[] PressureSetPoints { get { return Pset; } set { Pset = value; } }
+            public float[] Ps = null;
+            public float[] PressureSetPoints { get { return Ps; } set { Ps = value; } }
 
             //Proportional tuning value
             [ProtoMember(10)]
@@ -140,7 +140,7 @@ namespace ProsthesisCore.Telemetry
                 Load = false;
                 Dt = new float[0];
                 Ds = DeviceState.Disconnected;
-                Pset = new float[0];
+                Ps = new float[0];
                 P = new float[0];
                 I = new float[0];
                 D = new float[0];
@@ -211,14 +211,14 @@ namespace ProsthesisCore.Telemetry
                 }
 
                 Ds = other.Ds;
-                if (other.Pset != null)
+                if (other.Ps != null)
                 {
-                    Pset = new float[other.Pset.Length];
-                    Array.Copy(other.Pset, Pset, other.Pset.Length);
+                    Ps = new float[other.Ps.Length];
+                    Array.Copy(other.Ps, Ps, other.Ps.Length);
                 }
                 else
                 {
-                    Pset = new float[0];
+                    Ps = new float[0];
                 }
 
                 if (other.P != null)

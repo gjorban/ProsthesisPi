@@ -158,7 +158,7 @@
             this.groupBox6.Controls.Add(this.label10);
             this.groupBox6.Location = new System.Drawing.Point(7, 535);
             this.groupBox6.Name = "groupBox6";
-            this.groupBox6.Size = new System.Drawing.Size(293, 122);
+            this.groupBox6.Size = new System.Drawing.Size(276, 122);
             this.groupBox6.TabIndex = 7;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Motor Current (amps)";
@@ -166,7 +166,7 @@
             // mKneeMotorCurrentNumeric
             // 
             this.mKneeMotorCurrentNumeric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.mKneeMotorCurrentNumeric.Location = new System.Drawing.Point(213, 67);
+            this.mKneeMotorCurrentNumeric.Location = new System.Drawing.Point(196, 67);
             this.mKneeMotorCurrentNumeric.Name = "mKneeMotorCurrentNumeric";
             this.mKneeMotorCurrentNumeric.Size = new System.Drawing.Size(80, 20);
             this.mKneeMotorCurrentNumeric.TabIndex = 6;
@@ -175,7 +175,7 @@
             // mHipMotorCurrentNumeric
             // 
             this.mHipMotorCurrentNumeric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.mHipMotorCurrentNumeric.Location = new System.Drawing.Point(213, 18);
+            this.mHipMotorCurrentNumeric.Location = new System.Drawing.Point(196, 18);
             this.mHipMotorCurrentNumeric.Name = "mHipMotorCurrentNumeric";
             this.mHipMotorCurrentNumeric.Size = new System.Drawing.Size(80, 20);
             this.mHipMotorCurrentNumeric.TabIndex = 5;
@@ -189,7 +189,7 @@
             this.mKneeMotorCurrentSlider.Location = new System.Drawing.Point(37, 69);
             this.mKneeMotorCurrentSlider.Maximum = 300;
             this.mKneeMotorCurrentSlider.Name = "mKneeMotorCurrentSlider";
-            this.mKneeMotorCurrentSlider.Size = new System.Drawing.Size(170, 45);
+            this.mKneeMotorCurrentSlider.Size = new System.Drawing.Size(153, 45);
             this.mKneeMotorCurrentSlider.SmallChange = 10;
             this.mKneeMotorCurrentSlider.TabIndex = 3;
             this.mKneeMotorCurrentSlider.TickFrequency = 100;
@@ -204,7 +204,7 @@
             this.mHipMotorCurrentSlider.Location = new System.Drawing.Point(37, 20);
             this.mHipMotorCurrentSlider.Maximum = 300;
             this.mHipMotorCurrentSlider.Name = "mHipMotorCurrentSlider";
-            this.mHipMotorCurrentSlider.Size = new System.Drawing.Size(170, 45);
+            this.mHipMotorCurrentSlider.Size = new System.Drawing.Size(153, 45);
             this.mHipMotorCurrentSlider.SmallChange = 5;
             this.mHipMotorCurrentSlider.TabIndex = 2;
             this.mHipMotorCurrentSlider.TickFrequency = 100;
@@ -241,7 +241,7 @@
             this.groupBox5.Controls.Add(this.label8);
             this.groupBox5.Location = new System.Drawing.Point(7, 407);
             this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(293, 122);
+            this.groupBox5.Size = new System.Drawing.Size(276, 122);
             this.groupBox5.TabIndex = 6;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Flow Rates (lpm)";
@@ -249,7 +249,7 @@
             // mKneeFlowrateNumeric
             // 
             this.mKneeFlowrateNumeric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.mKneeFlowrateNumeric.Location = new System.Drawing.Point(213, 67);
+            this.mKneeFlowrateNumeric.Location = new System.Drawing.Point(196, 67);
             this.mKneeFlowrateNumeric.Name = "mKneeFlowrateNumeric";
             this.mKneeFlowrateNumeric.Size = new System.Drawing.Size(80, 20);
             this.mKneeFlowrateNumeric.TabIndex = 5;
@@ -258,7 +258,7 @@
             // mHipFlowrateNumeric
             // 
             this.mHipFlowrateNumeric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.mHipFlowrateNumeric.Location = new System.Drawing.Point(213, 18);
+            this.mHipFlowrateNumeric.Location = new System.Drawing.Point(196, 18);
             this.mHipFlowrateNumeric.Name = "mHipFlowrateNumeric";
             this.mHipFlowrateNumeric.Size = new System.Drawing.Size(80, 20);
             this.mHipFlowrateNumeric.TabIndex = 4;
@@ -272,7 +272,7 @@
             this.mKneeFlowrateSlider.Location = new System.Drawing.Point(37, 69);
             this.mKneeFlowrateSlider.Maximum = 100;
             this.mKneeFlowrateSlider.Name = "mKneeFlowrateSlider";
-            this.mKneeFlowrateSlider.Size = new System.Drawing.Size(170, 45);
+            this.mKneeFlowrateSlider.Size = new System.Drawing.Size(153, 45);
             this.mKneeFlowrateSlider.SmallChange = 10;
             this.mKneeFlowrateSlider.TabIndex = 3;
             this.mKneeFlowrateSlider.TickFrequency = 100;
@@ -287,7 +287,7 @@
             this.mHipFlowrateSlider.Location = new System.Drawing.Point(37, 20);
             this.mHipFlowrateSlider.Maximum = 100;
             this.mHipFlowrateSlider.Name = "mHipFlowrateSlider";
-            this.mHipFlowrateSlider.Size = new System.Drawing.Size(170, 45);
+            this.mHipFlowrateSlider.Size = new System.Drawing.Size(153, 45);
             this.mHipFlowrateSlider.SmallChange = 5;
             this.mHipFlowrateSlider.TabIndex = 2;
             this.mHipFlowrateSlider.TickFrequency = 100;
@@ -324,7 +324,7 @@
             this.groupBox4.Controls.Add(this.label6);
             this.groupBox4.Location = new System.Drawing.Point(7, 279);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(293, 122);
+            this.groupBox4.Size = new System.Drawing.Size(276, 122);
             this.groupBox4.TabIndex = 5;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "System Output Pressures (psi)";
@@ -332,7 +332,7 @@
             // mKneeOutputPressureNumeric
             // 
             this.mKneeOutputPressureNumeric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.mKneeOutputPressureNumeric.Location = new System.Drawing.Point(213, 67);
+            this.mKneeOutputPressureNumeric.Location = new System.Drawing.Point(196, 67);
             this.mKneeOutputPressureNumeric.Name = "mKneeOutputPressureNumeric";
             this.mKneeOutputPressureNumeric.Size = new System.Drawing.Size(80, 20);
             this.mKneeOutputPressureNumeric.TabIndex = 6;
@@ -341,7 +341,7 @@
             // mHipOutputPressureNumeric
             // 
             this.mHipOutputPressureNumeric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.mHipOutputPressureNumeric.Location = new System.Drawing.Point(213, 18);
+            this.mHipOutputPressureNumeric.Location = new System.Drawing.Point(196, 18);
             this.mHipOutputPressureNumeric.Name = "mHipOutputPressureNumeric";
             this.mHipOutputPressureNumeric.Size = new System.Drawing.Size(80, 20);
             this.mHipOutputPressureNumeric.TabIndex = 5;
@@ -355,7 +355,7 @@
             this.mKneeOutputPressureSlider.Location = new System.Drawing.Point(37, 69);
             this.mKneeOutputPressureSlider.Maximum = 2500;
             this.mKneeOutputPressureSlider.Name = "mKneeOutputPressureSlider";
-            this.mKneeOutputPressureSlider.Size = new System.Drawing.Size(170, 45);
+            this.mKneeOutputPressureSlider.Size = new System.Drawing.Size(153, 45);
             this.mKneeOutputPressureSlider.SmallChange = 10;
             this.mKneeOutputPressureSlider.TabIndex = 3;
             this.mKneeOutputPressureSlider.TickFrequency = 100;
@@ -370,7 +370,7 @@
             this.mHipOutputPressureSlider.Location = new System.Drawing.Point(37, 20);
             this.mHipOutputPressureSlider.Maximum = 2500;
             this.mHipOutputPressureSlider.Name = "mHipOutputPressureSlider";
-            this.mHipOutputPressureSlider.Size = new System.Drawing.Size(170, 45);
+            this.mHipOutputPressureSlider.Size = new System.Drawing.Size(153, 45);
             this.mHipOutputPressureSlider.SmallChange = 5;
             this.mHipOutputPressureSlider.TabIndex = 2;
             this.mHipOutputPressureSlider.TickFrequency = 100;
@@ -407,7 +407,7 @@
             this.groupBox3.Controls.Add(this.label4);
             this.groupBox3.Location = new System.Drawing.Point(6, 151);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(293, 122);
+            this.groupBox3.Size = new System.Drawing.Size(276, 122);
             this.groupBox3.TabIndex = 4;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Pressure Setpoints (psi)";
@@ -415,7 +415,7 @@
             // mKneeSetpointNumeric
             // 
             this.mKneeSetpointNumeric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.mKneeSetpointNumeric.Location = new System.Drawing.Point(213, 67);
+            this.mKneeSetpointNumeric.Location = new System.Drawing.Point(196, 67);
             this.mKneeSetpointNumeric.Name = "mKneeSetpointNumeric";
             this.mKneeSetpointNumeric.Size = new System.Drawing.Size(80, 20);
             this.mKneeSetpointNumeric.TabIndex = 6;
@@ -424,7 +424,7 @@
             // mHipSetpointNumeric
             // 
             this.mHipSetpointNumeric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.mHipSetpointNumeric.Location = new System.Drawing.Point(214, 18);
+            this.mHipSetpointNumeric.Location = new System.Drawing.Point(197, 18);
             this.mHipSetpointNumeric.Name = "mHipSetpointNumeric";
             this.mHipSetpointNumeric.Size = new System.Drawing.Size(80, 20);
             this.mHipSetpointNumeric.TabIndex = 5;
@@ -438,7 +438,7 @@
             this.mKneeSetpointSlider.Location = new System.Drawing.Point(37, 69);
             this.mKneeSetpointSlider.Maximum = 2500;
             this.mKneeSetpointSlider.Name = "mKneeSetpointSlider";
-            this.mKneeSetpointSlider.Size = new System.Drawing.Size(170, 45);
+            this.mKneeSetpointSlider.Size = new System.Drawing.Size(153, 45);
             this.mKneeSetpointSlider.SmallChange = 10;
             this.mKneeSetpointSlider.TabIndex = 3;
             this.mKneeSetpointSlider.TickFrequency = 100;
@@ -453,7 +453,7 @@
             this.mHipSetpointSlider.Location = new System.Drawing.Point(37, 20);
             this.mHipSetpointSlider.Maximum = 2500;
             this.mHipSetpointSlider.Name = "mHipSetpointSlider";
-            this.mHipSetpointSlider.Size = new System.Drawing.Size(170, 45);
+            this.mHipSetpointSlider.Size = new System.Drawing.Size(153, 45);
             this.mHipSetpointSlider.SmallChange = 5;
             this.mHipSetpointSlider.TabIndex = 2;
             this.mHipSetpointSlider.TickFrequency = 100;
@@ -501,7 +501,7 @@
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Location = new System.Drawing.Point(7, 23);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(293, 122);
+            this.groupBox2.Size = new System.Drawing.Size(276, 122);
             this.groupBox2.TabIndex = 0;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Throttles (0-100)";
@@ -509,7 +509,7 @@
             // mKneeThrottleNumeric
             // 
             this.mKneeThrottleNumeric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.mKneeThrottleNumeric.Location = new System.Drawing.Point(213, 67);
+            this.mKneeThrottleNumeric.Location = new System.Drawing.Point(196, 67);
             this.mKneeThrottleNumeric.Name = "mKneeThrottleNumeric";
             this.mKneeThrottleNumeric.Size = new System.Drawing.Size(80, 20);
             this.mKneeThrottleNumeric.TabIndex = 6;
@@ -518,7 +518,7 @@
             // mHipThrottleNumeric
             // 
             this.mHipThrottleNumeric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.mHipThrottleNumeric.Location = new System.Drawing.Point(212, 18);
+            this.mHipThrottleNumeric.Location = new System.Drawing.Point(195, 18);
             this.mHipThrottleNumeric.Name = "mHipThrottleNumeric";
             this.mHipThrottleNumeric.Size = new System.Drawing.Size(80, 20);
             this.mHipThrottleNumeric.TabIndex = 5;
@@ -532,7 +532,7 @@
             this.mKneeThrottleSlider.Location = new System.Drawing.Point(37, 69);
             this.mKneeThrottleSlider.Maximum = 100;
             this.mKneeThrottleSlider.Name = "mKneeThrottleSlider";
-            this.mKneeThrottleSlider.Size = new System.Drawing.Size(170, 45);
+            this.mKneeThrottleSlider.Size = new System.Drawing.Size(153, 45);
             this.mKneeThrottleSlider.SmallChange = 10;
             this.mKneeThrottleSlider.TabIndex = 3;
             this.mKneeThrottleSlider.TickFrequency = 100;
@@ -547,7 +547,7 @@
             this.mHipThrottleSlider.Location = new System.Drawing.Point(37, 20);
             this.mHipThrottleSlider.Maximum = 100;
             this.mHipThrottleSlider.Name = "mHipThrottleSlider";
-            this.mHipThrottleSlider.Size = new System.Drawing.Size(170, 45);
+            this.mHipThrottleSlider.Size = new System.Drawing.Size(153, 45);
             this.mHipThrottleSlider.SmallChange = 5;
             this.mHipThrottleSlider.TabIndex = 2;
             this.mHipThrottleSlider.TickFrequency = 100;
@@ -577,7 +577,7 @@
             this.mSensorTab.Location = new System.Drawing.Point(4, 22);
             this.mSensorTab.Name = "mSensorTab";
             this.mSensorTab.Padding = new System.Windows.Forms.Padding(3);
-            this.mSensorTab.Size = new System.Drawing.Size(384, 312);
+            this.mSensorTab.Size = new System.Drawing.Size(321, 312);
             this.mSensorTab.TabIndex = 1;
             this.mSensorTab.Text = "Sensors";
             this.mSensorTab.UseVisualStyleBackColor = true;

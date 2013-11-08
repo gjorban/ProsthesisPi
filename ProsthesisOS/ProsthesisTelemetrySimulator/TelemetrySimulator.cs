@@ -245,7 +245,7 @@ namespace ProsthesisTelemetrySimulator
         private void mKneeOutputPressureNumeric_ValueChanged(object sender, EventArgs e)
         {
             int value = (int)mKneeOutputPressureNumeric.Value;
-            mTelem.MotorTelem.PressureSetPoints[(int)ProsthesisTelemetry.ProsthesisMotorTelemetry.HydraulicSystems.Knee] = value;
+            mTelem.MotorTelem.Pout[(int)ProsthesisTelemetry.ProsthesisMotorTelemetry.HydraulicSystems.Knee] = value;
 
             KneeNumericChanged(value, mKneeOutputPressureSlider, mKneeOutputPressureNumeric);
         }
